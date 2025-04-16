@@ -1,0 +1,8 @@
+{
+  "name": "TinyAiApi",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/JasminDreasond/TinyAiApi.git",
+  "author": "Yasmin Seidel (JasminDreasond)",
+  "license": "AGPL-3.0-only"
+}
