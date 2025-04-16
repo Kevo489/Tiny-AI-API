@@ -1,13 +1,15 @@
 {
+  "extends": "./tsconfig.esm.json",
   "compilerOptions": {
     "allowJs": true,
+    "noEmit": false,
+    "checkJs": true,
     "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./dist",
     "emitDeclarationOnly": false,
-    "outDir": "dist",
-    "module": "ESNext",
     "target": "ESNext",
-    "moduleResolution": "node",
-    "strict": true
-  },
-  "include": ["src"]
+    "strict": true,
+    "moduleResolution": "node"
+  }
 }
