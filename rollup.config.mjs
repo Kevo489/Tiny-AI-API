@@ -1,20 +1,11 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-// import terser from '@rollup/plugin-terser';
-// import babel from '@rollup/plugin-babel';
+import terser from '@rollup/plugin-terser';
 import preserveDirectories from 'rollup-preserve-directives';
-// import nodePolyfills from 'rollup-plugin-polyfill-node';
-
-// import { builtinModules } from 'module';
-// import pkg from './package.json' assert { type: "json" };
 const pkg = JSON.parse(fs.readFileSync('./package.json'))
 
 import fs from 'fs';
 import path from 'path';
-// import { fileURLToPath } from 'url';
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 
 // Function to get all .js files from src/
 function getAllInputFiles(dir = 'src') {
@@ -38,24 +29,6 @@ const plugins = [
 ];
 
 export default [
-  // ESM
-  /* {
-    input: inputFiles,  
-    //external: [
-    //  ...builtinModules,
-    //  ...Object.keys(pkg.dependencies || {}), // <- does not include package.json libs
-    //],
-    output: {
-      dir: 'dist',
-      format: 'es',
-      sourcemap: true,
-      preserveModules: true,
-      preserveModulesRoot: 'src',
-      entryFileNames: '[name].mjs'
-    },
-    plugins,
-  }, */
-
   // CJS
   {
     external: [...Object.keys(pkg.dependencies || {})],
@@ -72,7 +45,7 @@ export default [
   },
 
   // IIFE (browser)
-  /* {
+  {
     input: 'src/index.mjs',
     output: {
       file: 'dist/TinyAiApi.min.js',
@@ -84,14 +57,16 @@ export default [
       }
     },
     plugins: [
-      babel({
-        babelHelpers: 'bundled',
-        exclude: 'node_modules/**'
+      resolve({
+        browser: true,
+        preferBuiltins: false
       }),
-      resolve(),
       commonjs(),
-      nodePolyfills(),
-      terser(),
+      terser({
+        format: {
+          comments: false,
+        },
+      }),
     ]
-  } */
+  }
 ];
