@@ -1,4 +1,4 @@
-class TinyAiApi {
+class TinyAiInstance {
   #_apiKey;
 
   constructor() {

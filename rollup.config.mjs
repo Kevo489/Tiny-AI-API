@@ -1,9 +1,9 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
-import babel from '@rollup/plugin-babel';
+// import terser from '@rollup/plugin-terser';
+// import babel from '@rollup/plugin-babel';
 import preserveDirectories from 'rollup-preserve-directives';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
+// import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 // import { builtinModules } from 'module';
 // import pkg from './package.json' assert { type: "json" };
@@ -11,10 +11,10 @@ const pkg = JSON.parse(fs.readFileSync('./package.json'))
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+// import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // Function to get all .js files from src/
 function getAllInputFiles(dir = 'src') {
@@ -32,7 +32,7 @@ const inputFiles = getAllInputFiles();
 
 // Prepare Plugins
 const plugins = [
-  resolve(),
+  resolve({ preferBuiltins: true }),
   commonjs(),
   preserveDirectories(),
 ];
@@ -72,7 +72,7 @@ export default [
   },
 
   // IIFE (browser)
-  {
+  /* {
     input: 'src/index.mjs',
     output: {
       file: 'dist/TinyAiApi.min.js',
@@ -93,5 +93,5 @@ export default [
       nodePolyfills(),
       terser(),
     ]
-  }
+  } */
 ];

@@ -1,3 +1,3 @@
-import { TinyAiApi } from '../dist';
+import { TinyAiInstance } from '../dist';
 
-console.log(TinyAiApi);
+console.log(TinyAiInstance);

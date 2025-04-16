@@ -1,5 +1,5 @@
 import { jsonrepair } from 'jsonrepair';
-import TinyAiApi from '../base.mjs';
+import TinyAiInstance from '../base.mjs';
 
 /**
  * Configures the Tiny AI Api to use the Google Gemini API.
@@ -665,7 +665,7 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
  * @function
  * @param {string} GEMINI_API_KEY - The API key used to authenticate with the Google Gemini API.
  * @param {string} [MODEL_DATA='gemini-2.0-flash'] - Optional. The model identifier to use. Defaults to `'gemini-2.0-flash'`.
- * @returns {TinyAiApi} A configured instance of TinyAiApi.
+ * @returns {TinyAiInstance} A configured instance of TinyAiApi.
  */
 export const TinyGoogleAi = (GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash') =>
-  setTinyGoogleAi(new TinyAiApi(), GEMINI_API_KEY, MODEL_DATA);
+  setTinyGoogleAi(new TinyAiInstance(), GEMINI_API_KEY, MODEL_DATA);

@@ -14,7 +14,7 @@ import { objType } from './utils.mjs';
  *
  * Documentation written with the assistance of OpenAI's ChatGPT.
  */
-class TinyAiApi extends EventEmitter {
+class TinyAiInstance extends EventEmitter {
   #_apiKey;
   #_getModels;
   #_countTokens;
@@ -24,7 +24,7 @@ class TinyAiApi extends EventEmitter {
   #_insertIntoHistory;
 
   /**
-   * Creates an instance of the TinyAiApi class.
+   * Creates an instance of the TinyAiInstance class.
    * Initializes internal variables, sets up initial configurations for handling AI models,
    * session history, and content generation, with the option to use a single or multiple instances.
    *
@@ -1358,4 +1358,4 @@ class TinyAiApi extends EventEmitter {
   }
 }
 
-export default TinyAiApi;
+export default TinyAiInstance;

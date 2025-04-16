@@ -1,4 +1,4 @@
 import { TinyGoogleAi, setTinyGoogleAi } from './services/Google.mjs';
-import TinyAiApi from './base.mjs';
+import TinyAiInstance from './base.mjs';
 
-export { TinyAiApi, TinyGoogleAi, setTinyGoogleAi };
+export { TinyAiInstance, TinyGoogleAi, setTinyGoogleAi };
