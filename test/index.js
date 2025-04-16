@@ -1,3 +1,3 @@
-import TinyAiManager from '../dist/index.mjs';
+import { TinyAiApi } from '../dist';
 
-console.log(TinyAiManager);
+console.log(TinyAiApi);

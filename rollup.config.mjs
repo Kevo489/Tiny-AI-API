@@ -5,6 +5,9 @@ import babel from '@rollup/plugin-babel';
 import preserveDirectories from 'rollup-preserve-directives';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 
+// import { builtinModules } from 'module';
+// import pkg from './package.json' assert { type: "json" };
+
 import fs from 'fs';
 import path from 'path';
 
@@ -14,7 +17,7 @@ function getAllInputFiles(dir = 'src') {
   const files = entries.flatMap((entry) => {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) return getAllInputFiles(fullPath);
-    if (entry.isFile() && entry.name.endsWith('.js')) return fullPath;
+    if (entry.isFile() && entry.name.endsWith('.mjs')) return fullPath;
     return [];
   });
   return files;
@@ -32,7 +35,11 @@ const plugins = [
 export default [
   // ESM
   /* {
-    input: inputFiles,
+    input: inputFiles,  
+    //external: [
+    //  ...builtinModules,
+    //  ...Object.keys(pkg.dependencies || {}), // <- does not include package.json libs
+    //],
     output: {
       dir: 'dist',
       format: 'es',
@@ -60,7 +67,7 @@ export default [
 
   // IIFE (browser)
   {
-    input: 'src/index.js',
+    input: 'src/index.mjs',
     output: {
       file: 'dist/TinyAiApi.min.js',
       format: 'iife',
