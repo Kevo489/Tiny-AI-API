@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { jsonrepair } from 'jsonrepair';
 import TinyAiApi from '../TinyAiApi';
 
