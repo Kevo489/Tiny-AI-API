@@ -7,7 +7,7 @@
   "exports": {
     ".": {
       "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js"
+      "import": "./dist/index.js"
     }
   },
   "repository": "https://github.com/JasminDreasond/TinyAiApi.git",

@@ -668,7 +668,7 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
  * @param {string} [MODEL_DATA='gemini-2.0-flash'] - Optional. The model identifier to use. Defaults to `'gemini-2.0-flash'`.
  * @returns {TinyAiApi} A configured instance of TinyAiApi.
  */
-const newTinyGoogleAi = (GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash') =>
+const TinyGoogleAi = (GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash') =>
   setTinyGoogleAi(new TinyAiApi(), GEMINI_API_KEY, MODEL_DATA);
 
-export default newTinyGoogleAi;
+export default TinyGoogleAi;
