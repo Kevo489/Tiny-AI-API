@@ -1,5 +1,5 @@
 import { jsonrepair } from 'jsonrepair';
-import TinyAiApi from '../TinyAiApi.js';
+import TinyAiApi from '../TinyAiApi.mjs';
 
 /**
  * Configures the Tiny AI Api to use the Google Gemini API.

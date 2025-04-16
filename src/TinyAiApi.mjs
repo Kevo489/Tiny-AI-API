@@ -1,6 +1,6 @@
 import objHash from 'object-hash';
 import EventEmitter from 'events';
-import { objType } from './utils.js';
+import { objType } from './utils.mjs';
 
 /**
  * AI Server Communication API
