@@ -1,5 +1,6 @@
 {
   "name": "tiny-ai-api",
+  "description": "A customizable and extensible client api for managing conversations and AI interactions, currently supporting the **Google Gemini** API — with flexibility to support any similar AI APIs.",
   "version": "1.0.0",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
