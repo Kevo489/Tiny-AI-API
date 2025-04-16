@@ -2,7 +2,6 @@
   "extends": "./tsconfig.esm.json",
   "compilerOptions": {
     "allowJs": true,
-    "noEmit": false,
     "checkJs": false,
     "declaration": true,
     "declarationMap": true,

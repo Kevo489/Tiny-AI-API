@@ -1,5 +1,5 @@
-import TinyGoogleAi, { setTinyGoogleAi } from "./services/Google";
-import TinyAiApi from "./TinyAiApi";
+import TinyGoogleAi, { setTinyGoogleAi } from "./services/Google.js";
+import TinyAiApi from "./TinyAiApi.js";
 
 export default TinyAiApi;
 

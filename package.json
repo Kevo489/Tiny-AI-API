@@ -1,5 +1,5 @@
 {
-  "name": "tinyaiapi",
+  "name": "tiny-ai-api",
   "version": "1.0.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -39,6 +39,8 @@
   ],
   "scripts": {
     "fix:prettier": "prettier --write ./src/*",
+    "test:run": "cd ./test && npm run test:run",
+    "test:install": "cd ./test && npm install",
     "auto-build": "npm run build -- -w",
     "build": "tsc -p tsconfig.json",
     "build-all": "npm run build && npm run build-commonjs",
