@@ -7,9 +7,14 @@ import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 // import { builtinModules } from 'module';
 // import pkg from './package.json' assert { type: "json" };
+const pkg = JSON.parse(fs.readFileSync('./package.json'))
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Function to get all .js files from src/
 function getAllInputFiles(dir = 'src') {
@@ -53,6 +58,7 @@ export default [
 
   // CJS
   {
+    external: [...Object.keys(pkg.dependencies || {})],
     input: inputFiles,
     output: {
       dir: 'dist',
