@@ -39,6 +39,7 @@
     "extensible"
   ],
   "scripts": {
+    "test": "npm run test:mjs",
     "test:js": "npx babel-node test/index.js",
     "test:mjs": "node test/index.mjs",
     "test:cjs": "node test/index.cjs",
