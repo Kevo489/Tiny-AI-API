@@ -20,7 +20,7 @@ This documentation is designed to provide all the information you need to get up
 - [Content](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/content.md) - Manage session content, including prompts, dialogues, and files.
 - [Custom](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/custom.md) - Working with custom values and user-specific configurations.
 - [Dev](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/dev.md) - Development tools and utilities for advanced users.
-- [Models](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/dev.md) - Model configuration and setup.
+- [Models](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/models.md) - Model configuration and setup.
 
 ---
 
