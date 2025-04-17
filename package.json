@@ -16,6 +16,7 @@
   "author": "Yasmin Seidel (JasminDreasond)",
   "license": "AGPL-3.0-only",
   "dependencies": {
+    "for-promise": "^2.0.1",
     "jsonrepair": "^3.12.0",
     "object-hash": "^3.0.0"
   },
@@ -50,16 +51,16 @@
     "build-dist": "npm run build",
     "build-browserify": "npx browserify build/browserify.js -p esmify > dist/TinyAiApi.web.js",
     "clean": "rm -rf dist",
-    "prepublishOnly" : "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@babel/cli": "^7.27.0",
     "@babel/core": "^7.26.10",
     "@babel/node": "^7.26.0",
     "@babel/preset-env": "^7.26.9",
-    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "babel-preset-es2015": "^6.24.1",
     "browser-resolve": "^2.0.0",
