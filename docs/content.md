@@ -936,3 +936,445 @@ const msgId = sessionManager.getIdByIndex(3);
 
 ---
 
+### `deleteIndex(index, id)`
+
+Deletes a specific message entry at a given index within the session history.
+
+---
+
+#### Purpose
+
+This method removes all data related to a message from the session history arrays (data, ids, hashes, and tokens) based on a specific index. It also emits a `deleteIndex` event to notify subscribers of the deletion.
+
+---
+
+#### Parameters
+
+| Name     | Type     | Required | Description                                                                 |
+|----------|----------|----------|-----------------------------------------------------------------------------|
+| `index`  | `number` | Yes      | The index of the entry to delete.                                           |
+| `id`     | `string` | No       | The session ID. If omitted, the currently selected session will be used.   |
+
+---
+
+#### Returns
+
+| Type      | Description                                                                 |
+|-----------|-----------------------------------------------------------------------------|
+| `boolean` | Returns `true` if the entry was successfully deleted; otherwise `false`.    |
+
+---
+
+#### Implementation
+
+```js
+deleteIndex(index, id) {
+  const history = this.getData(id);
+  if (history && history.data[index]) {
+    const msgId = this.getIdByIndex(index);
+    history.data.splice(index, 1);
+    history.ids.splice(index, 1);
+    history.hash.data.splice(index, 1);
+    history.tokens.data.splice(index, 1);
+    this.emit('deleteIndex', index, msgId, this.getId(id));
+    return true;
+  }
+  return false;
+}
+```
+
+---
+
+#### Behavior
+
+- Retrieves the session history using `getData(id)`.
+- Validates the existence of data at the specified index.
+- If valid:
+  - Removes entries from all relevant arrays: `data`, `ids`, `hash.data`, and `tokens.data`.
+  - Emits a `deleteIndex` event with the index, message ID, and session ID.
+  - Returns `true`.
+- If invalid:
+  - Returns `false`.
+
+---
+
+#### Example
+
+```js
+const success = sessionManager.deleteIndex(2);
+if (success) {
+  console.log("Entry deleted.");
+} else {
+  console.log("Entry not found or index invalid.");
+}
+```
+
+---
+
+### `replaceIndex(index, data, tokens, id)`
+
+Replaces an existing message entry in the session history at the specified index with new data and/or token count.
+
+---
+
+#### Parameters
+
+| Name     | Type      | Required | Description                                                                 |
+|----------|-----------|----------|-----------------------------------------------------------------------------|
+| `index`  | `number`  | Yes      | The index of the entry to replace.                                          |
+| `data`   | `Object`  | No       | The new message data to replace the current entry.                          |
+| `tokens` | `number`  | No       | The new token count associated with the entry.                              |
+| `id`     | `string`  | No       | The session ID. If omitted, the currently selected session will be used.    |
+
+---
+
+#### Returns
+
+| Type      | Description                                                                 |
+|-----------|-----------------------------------------------------------------------------|
+| `boolean` | Returns `true` if the entry was successfully replaced; otherwise `false`.   |
+
+---
+
+#### Behavior
+
+- Retrieves the session history using `getData(id)`.
+- Verifies if the specified index exists.
+- If either `data` or `tokens` is provided and the index is valid:
+  - Replaces `history.data[index]` with the new `data`, if provided.
+  - Updates the hash at `history.hash.data[index]` using `objHash(data)`.
+  - Updates the token count at `history.tokens.data[index]`, if `tokens` is provided.
+  - Emits a `replaceIndex` event with the updated information.
+  - Returns `true`.
+- If no valid `data` or `tokens` is passed, or the index is invalid, returns `false`.
+
+---
+
+#### Implementation
+
+```js
+replaceIndex(index, data, tokens, id) {
+  const history = this.getData(id);
+  if (history && history.data[index] && (data || tokens)) {
+    let hash = null;
+
+    if (data) {
+      hash = objHash(data);
+      history.data[index] = data;
+      history.hash.data[index] = hash;
+    }
+
+    if (tokens) history.tokens.data[index] = tokens;
+
+    this.emit('replaceIndex', index, data, tokens, hash, this.getId(id));
+    return true;
+  }
+
+  return false;
+}
+```
+
+---
+
+#### Example Usage
+
+```js
+sessionManager.replaceIndex(3, { role: "user", content: "Updated message." }, 40);
+```
+
+---
+
+### `getLastIndex(id)`
+
+Retrieves the index of the last entry in the session history.
+
+---
+
+#### Parameters
+
+| Name  | Type     | Required | Description                                                                 |
+|-------|----------|----------|-----------------------------------------------------------------------------|
+| `id`  | `string` | No       | The session ID. If omitted, the currently selected session will be used.    |
+
+---
+
+#### Returns
+
+| Type     | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| `number` | The index of the last entry in the session history, or `-1` if none exists. |
+
+---
+
+#### Behavior
+
+- Uses `getData(id)` to retrieve the session history.
+- Checks if the last item in `history.data` exists.
+- If valid, returns the index of the last item (`length - 1`).
+- If the history is invalid or empty, returns `-1`.
+
+---
+
+#### Implementation
+
+```js
+getLastIndex(id) {
+  const history = this.getData(id);
+  if (history && history.data[history.data.length - 1]) {
+    return history.data.length - 1;
+  }
+  return -1;
+}
+```
+
+---
+
+#### Example Usage
+
+```js
+const last = sessionManager.getLastIndex(); // returns the last message index
+```
+
+---
+
+### `getLastIndexData(id)`
+
+Retrieves the data of the last entry in the session history.
+
+---
+
+#### Parameters
+
+| Name  | Type     | Required | Description                                                              |
+|-------|----------|----------|--------------------------------------------------------------------------|
+| `id`  | `string` | No       | The session ID. If omitted, the currently selected session will be used. |
+
+---
+
+#### Returns
+
+| Type     | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| `Object` | The data of the last entry in the session history, or `null` if not found.  |
+
+---
+
+#### Behavior
+
+- Uses `getData(id)` to retrieve the session history.
+- Checks if the last entry exists in `history.data`.
+- Returns the last item if valid; otherwise returns `null`.
+
+---
+
+#### Implementation
+
+```js
+getLastIndexData(id) {
+  const history = this.getData(id);
+  if (history && history.data[history.data.length - 1])
+    return history.data[history.data.length - 1];
+  return null;
+}
+```
+
+---
+
+#### Example Usage
+
+```js
+const lastData = sessionManager.getLastIndexData();
+if (lastData) {
+  console.log("Last message content:", lastData.content);
+}
+```
+
+### `existsFirstIndex(id)`
+
+Checks if the session history has at least one valid entry.
+
+---
+
+#### Parameters
+
+| Name  | Type     | Required | Description                                                              |
+|-------|----------|----------|--------------------------------------------------------------------------|
+| `id`  | `string` | No       | The session ID. If omitted, the currently selected session will be used. |
+
+---
+
+#### Returns
+
+| Type      | Description                                                           |
+|-----------|-----------------------------------------------------------------------|
+| `boolean` | `true` if the session history contains at least one valid entry, `false` otherwise. |
+
+---
+
+#### Behavior
+
+- Retrieves session history using `getData(id)`.
+- Returns `true` if the first entry in `history.data` exists and is truthy.
+- Otherwise, returns `false`.
+
+---
+
+#### Implementation
+
+```js
+existsFirstIndex(id) {
+  const history = this.getData(id);
+  if (history && history.data[0]) return true;
+  return false;
+}
+```
+
+---
+
+#### Example Usage
+
+```js
+if (sessionManager.existsFirstIndex()) {
+  console.log("The session contains at least one message.");
+}
+```
+
+---
+
+### `getFirstIndexData(id)`
+
+Retrieves the first entry from the session history.
+
+---
+
+#### Parameters
+
+| Name  | Type     | Required | Description                                                              |
+|-------|----------|----------|--------------------------------------------------------------------------|
+| `id`  | `string` | No       | The session ID. If omitted, the currently selected session will be used. |
+
+---
+
+#### Returns
+
+| Type       | Description                                                |
+|------------|------------------------------------------------------------|
+| `Object`   | The first entry of the session history, if it exists.      |
+| `null`     | Returned if the session history is invalid or empty.       |
+
+---
+
+#### Behavior
+
+- Uses `getData(id)` to retrieve the current session's history object.
+- Returns the first element in the `history.data` array if present.
+- Returns `null` if the session history is invalid or empty.
+
+---
+
+#### Implementation
+
+```js
+getFirstIndexData(id) {
+  const history = this.getData(id);
+  if (history && history.data[0]) return history.data[0];
+  return null;
+}
+```
+
+---
+
+#### Example Usage
+
+```js
+const firstEntry = sessionManager.getFirstIndexData();
+if (firstEntry) {
+  console.log("First message:", firstEntry);
+}
+```
+
+---
+
+### `addData(data, tokenData = { count: null }, id = undefined)`
+
+Adds new data to the selected session history.
+
+---
+
+#### Parameters
+
+| Name         | Type       | Required | Description                                                                 |
+|--------------|------------|----------|-----------------------------------------------------------------------------|
+| `data`       | `Object`   | Yes      | The data to be added to the session history.                                |
+| `tokenData`  | `Object`   | No       | Optional token-related data to be associated with the new entry. Defaults to `{ count: null }`. |
+| `id`         | `string`   | No       | The session ID. If omitted, the currently selected session will be used.    |
+
+---
+
+#### Returns
+
+| Type      | Description                              |
+|-----------|------------------------------------------|
+| `number`  | The new ID of the added data entry.      |
+
+---
+
+#### Throws
+
+| Type      | Description                              |
+|-----------|------------------------------------------|
+| `Error`   | Thrown if the provided session ID is invalid or does not exist in history. |
+
+---
+
+#### Behavior
+
+- Uses `this.getId(id)` to retrieve the selected session ID.
+- If the session history exists for the selected session, it increments the `nextId` and adds the new data entry to the `data`, `tokens.data`, `ids`, and `hash.data` arrays.
+- Emits the `addData` event with the new ID, data, token content, hash, and session ID.
+
+---
+
+#### Implementation
+
+```js
+addData(data, tokenData = { count: null }, id = undefined) {
+  const selectedId = this.getId(id);
+  if (this.history[selectedId]) {
+    if (typeof this.history[selectedId].nextId !== 'number') this.history[selectedId].nextId = 0;
+    const newId = this.history[selectedId].nextId;
+    this.history[selectedId].nextId++;
+    const hash = objHash(data);
+
+    const tokenContent = objType(tokenData, 'object')
+      ? tokenData
+      : { count: typeof tokenData === 'number' ? tokenData : null };
+
+    this.history[selectedId].data.push(data);
+    this.history[selectedId].tokens.data.push(tokenContent);
+    this.history[selectedId].ids.push(newId);
+    this.history[selectedId].hash.data.push(hash);
+
+    this.emit('addData', newId, data, tokenContent, hash, selectedId);
+    return newId;
+  }
+  throw new Error('Invalid history id data!');
+}
+```
+
+---
+
+#### Example Usage
+
+```js
+try {
+  const newData = { content: "New message data" };
+  const tokenInfo = { count: 5 };
+  const newId = sessionManager.addData(newData, tokenInfo);
+  console.log(`New data added with ID: ${newId}`);
+} catch (error) {
+  console.error(error.message);
+}
+```
+
+This method is responsible for adding new entries into the session history while tracking token-related data. The `tokenData` can be passed to associate additional information, like a count, with the new data entry.
