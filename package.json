@@ -1,10 +1,10 @@
 {
   "name": "tiny-ai-api",
   "description": "A customizable and extensible client api for managing conversations and AI interactions, currently supporting the **Google Gemini** API — with flexibility to support any similar AI APIs.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "ethereum": "jasmindreasond.x",
   "exports": {
     ".": {
