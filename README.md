@@ -1,4 +1,4 @@
-# AI Server Communication API
+# Tiny AI Server Communication API
 
 This class is responsible for managing AI session data, including models, history, and content generation.
 
@@ -6,6 +6,8 @@ The script is designed to interact with the AI API, providing a complete structu
 
 It implements a session management system to help handle multiple different bots, allowing you to manage various aspects of interactions such as system instructions, file handling, tokens, and more.
 
+> **Note**: This documentation was written by [ChatGPT](https://openai.com/chatgpt), an AI assistant developed by OpenAI, based on the project structure and descriptions provided by the repository author.  
+> If you find any inaccuracies or need improvements, feel free to contribute or open an issue!
 ---
 
 ## Limitations
