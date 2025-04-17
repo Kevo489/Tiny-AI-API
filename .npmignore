@@ -1,4 +1,14 @@
+# Remove original repository data
 docs
+build
+src
+test
+.babelrc
+.prettierignore
+.prettierrc.json
+babel.config.json
+rollup.config.mjs
+tsconfig.json
 
 # Logs
 logs

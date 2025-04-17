@@ -36,7 +36,7 @@ export default [
     output: {
       dir: 'dist',
       format: 'cjs',
-      sourcemap: true,
+      sourcemap: false,
       preserveModules: true,
       preserveModulesRoot: 'src',
       entryFileNames: '[name].cjs'
@@ -51,7 +51,7 @@ export default [
       file: 'dist/TinyAiApi.min.js',
       format: 'iife',
       name: 'TinyAiApi',
-      sourcemap: true,
+      sourcemap: false,
       globals: {
         'lodash': '_',
       }

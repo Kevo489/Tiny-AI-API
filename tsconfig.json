@@ -4,7 +4,7 @@
         "allowJs": true,
         "checkJs": false,
         "declaration": true,
-        "declarationMap": true,
+        "declarationMap": false,
         "declarationDir": "./dist",
         "emitDeclarationOnly": false,
         "target": "ESNext",
