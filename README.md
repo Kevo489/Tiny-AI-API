@@ -8,6 +8,13 @@ It implements a session management system to help handle multiple different bots
 
 > **Note**: This documentation was written by [ChatGPT](https://openai.com/chatgpt), an AI assistant developed by OpenAI, based on the project structure and descriptions provided by the repository author.  
 > If you find any inaccuracies or need improvements, feel free to contribute or open an issue!
+
+---
+
+## Inspiration
+
+This project was initially a simple AI application from Pony Driland repository. The AI project eventually evolved both during the development that resulted in this project that is now published by the same creator of the Pony Driland repository.
+
 ---
 
 ## Limitations
