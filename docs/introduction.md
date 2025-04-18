@@ -71,13 +71,13 @@ To **select or deselect** a session ID from the session history for further oper
 
 ```js
 // Select an existing session
-tinyGoogleAI.selectDataId("session_123"); // true
+tinyAi.selectDataId("session_123"); // true
 
 // Try selecting a non-existing session
-tinyGoogleAI.selectDataId("invalid_id");  // false
+tinyAi.selectDataId("invalid_id");  // false
 
 // Deselect the current session
-tinyGoogleAI.selectDataId(null);          // true
+tinyAi.selectDataId(null);          // true
 ```
 
 This method helps manage session state within the history, allowing components to react to session changes through the emitted event.
@@ -123,10 +123,10 @@ To **retrieve the appropriate session ID**, especially when working in multi-ses
 
 ```js
 // In multi-session mode:
-tinyGoogleAI.getId("session_123"); // returns "session_123"
+tinyAi.getId("session_123"); // returns "session_123"
 
 // In single-session mode or if no ID provided:
-tinyGoogleAI.getId();              // returns currently selected session ID or null
+tinyAi.getId();              // returns currently selected session ID or null
 ```
 
 ---

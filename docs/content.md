@@ -79,11 +79,11 @@ Counts tokens by sending a request to an external API, processing the response, 
 
 ```js
 // Set the function to count tokens
-tinyGoogleAI._setCountTokens(
+tinyAi._setCountTokens(
   (apiKey, model, controller, data) => 
     new Promise((resolve, reject) => {
       const dataContent = requestBuilder(data);  // Prepares data for the request
-      const modelInfo = tinyGoogleAI.getModelData(model);  // Retrieves model data
+      const modelInfo = tinyAi.getModelData(model);  // Retrieves model data
       dataContent.model = modelInfo?.name;  // Adds model name to request
       
       // Check if contents are available to process
@@ -118,7 +118,7 @@ tinyGoogleAI._setCountTokens(
 );
 
 // Example call:
-const tokenData = tinyGoogleAI.countTokens(data, model, controller);
+const tokenData = tinyAi.countTokens(data, model, controller);
 console.log(tokenData);
 ```
 
@@ -158,11 +158,11 @@ This function retrieves error details based on the provided error code. It check
 
 ```js
 // Example error code lookup
-const errorDetails = tinyGoogleAI.getErrorCode(404);
+const errorDetails = tinyAi.getErrorCode(404);
 console.log(errorDetails);  // Output: { text: 'Not Found' }
 
 // Example with a custom error object
-const customErrorDetails = tinyGoogleAI.getErrorCode('SERVER_ERROR');
+const customErrorDetails = tinyAi.getErrorCode('SERVER_ERROR');
 console.log(customErrorDetails);  // Output: { text: 'Internal Server Error' }
 ```
 
@@ -280,10 +280,10 @@ To **access session-specific data** from the internal `history` store, either by
 
 ```js
 // Returns data for a specific ID
-const sessionData = tinyGoogleAI.getData("session_abc");
+const sessionData = tinyAi.getData("session_abc");
 
 // Returns data for currently selected session
-const currentData = tinyGoogleAI.getData();
+const currentData = tinyAi.getData();
 ```
 
 ---
@@ -355,10 +355,10 @@ To **aggregate all token counts** stored in the `tokens` object of a session, in
 #### Example Usage
 
 ```js
-const total = tinyGoogleAI.getTotalTokens("session_456");
+const total = tinyAi.getTotalTokens("session_456");
 // e.g., returns 148 (from data) + 12 + 8 = 168
 
-const currentTotal = tinyGoogleAI.getTotalTokens();
+const currentTotal = tinyAi.getTotalTokens();
 // Returns total tokens of currently selected session
 ```
 
@@ -421,10 +421,10 @@ To return a single entry from the `tokens.data[]` array of a session, which typi
 #### Example Usage
 
 ```js
-const tokenInfo = tinyGoogleAI.getMsgTokensByIndex(3, "session_123");
+const tokenInfo = tinyAi.getMsgTokensByIndex(3, "session_123");
 // Might return: { count: 87 }
 
-const currentTokenInfo = tinyGoogleAI.getMsgTokensByIndex(2);
+const currentTokenInfo = tinyAi.getMsgTokensByIndex(2);
 // Uses currently selected session
 ```
 
@@ -497,7 +497,7 @@ return null;
 #### Example Usage
 
 ```js
-const tokens = tinyGoogleAI.getMsgTokensById("msg_890", "session_001");
+const tokens = tinyAi.getMsgTokensById("msg_890", "session_001");
 // Might return: { count: 64 }
 ```
 
@@ -559,7 +559,7 @@ return null;
 #### Example Usage
 
 ```js
-const hash = tinyGoogleAI.getMsgHashByIndex(2, "session_001");
+const hash = tinyAi.getMsgHashByIndex(2, "session_001");
 // Might return: "ab123c456d789fgh1234567890abcdef"
 ```
 
@@ -621,7 +621,7 @@ return null;
 #### Example Usage
 
 ```js
-const hash = tinyGoogleAI.getMsgHashById("msg123", "session_001");
+const hash = tinyAi.getMsgHashById("msg123", "session_001");
 // Might return: "ab123c456d789fgh1234567890abcdef"
 ```
 
@@ -677,7 +677,7 @@ return this.getMsgByIndex(index, id) ? true : false;
 #### Example Usage
 
 ```js
-const exists = tinyGoogleAI.indexExists(3, "session_001");
+const exists = tinyAi.indexExists(3, "session_001");
 // Returns: true if there's a message at index 3 in the session "session_001", otherwise false.
 ```
 

@@ -255,7 +255,7 @@ This method allows you to define custom error codes for a session. Error codes h
 
 ```js
 // Set custom error codes for the session
-tinyGoogleAI._setErrorCodes({
+tinyAi._setErrorCodes({
   FINISH_REASON_UNSPECIFIED: { text: 'Default value. This value is unused.' },
   STOP: { text: 'Natural stop point of the model or provided stop sequence.', hide: true },
   MAX_TOKENS: { text: 'The maximum number of tokens as specified in the request was reached.' },
@@ -321,7 +321,7 @@ This method allows you to define a custom callback function that will handle con
 Here's a simplified example that shows how you can use `_setGenContent`:
 
 ```js
-tinyGoogleAI._setGenContent(
+tinyAi._setGenContent(
   (apiKey, isStream, data, model, streamingCallback, controller) =>
     new Promise((resolve, reject) => {
       // Build the request body using the provided data
@@ -343,7 +343,7 @@ tinyGoogleAI._setGenContent(
           if (result.candidates) {
             for (const item of result.candidates) {
               if (item.content) {
-                tinyGoogleAI.buildContents(finalData.contents, item.content, item.content.role);
+                tinyAi.buildContents(finalData.contents, item.content, item.content.role);
               }
             }
           }

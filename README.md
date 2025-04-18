@@ -69,7 +69,7 @@ Alternatively, you can use the following shorthand method:
 ```js
 import { TinyGoogleAi } from 'tiny-ai-api';
 
-const ai = TinyGoogleAi('GEMINI_API_KEY', 'gemini-2.0-flash');
+const ai = new TinyGoogleAi('GEMINI_API_KEY', 'gemini-2.0-flash');
 ```
 
 ---

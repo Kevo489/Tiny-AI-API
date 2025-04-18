@@ -3,7 +3,7 @@ import EventEmitter from 'events';
 import { objType } from 'for-promise/dist/utils/lib.mjs';
 
 /**
- * AI Server Communication API
+ * Tiny AI Server Communication API
  * -----------------------------
  * This class is responsible for managing AI session data, including models, history, and content generation.
  * The script is designed to interact with the AI API, providing a complete structure for creating user interfaces (UI) or AI-powered chatbots.

@@ -4,7 +4,10 @@ import TinyAiInstance from '../base.mjs';
 /**
  * Configures the Tiny AI Api to use the Google Gemini API.
  *
- * @param {Object} tinyGoogleAI - The TinyAiApi instance to be configured.
+ * This function sets up the Google Gemini API in a TinyAiApi instance, providing
+ * the required authentication and model parameters.
+ *
+ * @param {TinyAiInstance} tinyGoogleAI - The TinyAiApi instance to be configured.
  * @param {string} GEMINI_API_KEY - The API key for Google Gemini.
  * @param {string} [MODEL_DATA='gemini-2.0-flash'] - The model to use (default is 'gemini-2.0-flash').
  */
@@ -13,7 +16,26 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
   tinyGoogleAI.setApiKey(GEMINI_API_KEY);
   tinyGoogleAI.setModel(MODEL_DATA);
 
-  // Error codes
+  /**
+   * A comprehensive map of HTTP status codes and their corresponding human-readable descriptions.
+   *
+   * This object includes:
+   * - Standard HTTP status codes (1xx–5xx)
+   * - Cloudflare-specific codes (520–530, 598–599)
+   * - Nginx-specific codes (444, 494–499)
+   *
+   * These codes are useful for interpreting responses from HTTP requests and displaying
+   * user-friendly messages or handling programmatic logic based on response status.
+   *
+   * @constant
+   * @type {Object<number, string>}
+   *
+   * @example
+   * const message = errorCodes[404]; // "Not Found"
+   * if (status >= 400) {
+   *   console.warn(`Error ${status}: ${errorCodes[status] || 'Unknown Status Code'}`);
+   * }
+   */
   const errorCodes = {
     100: 'Continue',
     101: 'Switching Protocols',
@@ -99,6 +121,33 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
     499: 'Client Closed Request',
   };
 
+  /**
+   * Registers a predefined set of error codes and their associated messages for interpreting
+   * the finish reasons returned by the Google Generative AI API.
+   *
+   * Each error code maps to a human-readable explanation and optional display rules (e.g. `hide`).
+   * These can be used to provide meaningful messages in the UI or logs when handling model responses.
+   *
+   * @function
+   * @name tinyGoogleAI._setErrorCodes
+   * @param {Object<string, {text: string, hide?: boolean}>} errorCodes - An object where each key is an error/finish reason returned by the API,
+   * and the value contains a `text` message and optionally a `hide` flag to control visibility in UI.
+   *
+   * @returns {void}
+   *
+   * @example
+   * tinyGoogleAI._setErrorCodes({
+   *   STOP: { text: 'Natural stop point of the model or provided stop sequence.', hide: true },
+   *   MAX_TOKENS: { text: 'The maximum number of tokens as specified in the request was reached.' },
+   *   SAFETY: { text: 'The response candidate content was flagged for safety reasons.' },
+   *   ...
+   * });
+   *
+   * Example usage:
+   * const reason = response.finishReason;
+   * const errorInfo = tinyGoogleAI.getErrorCode(reason);
+   * console.log(errorInfo.text); // Shows friendly explanation for the finish reason
+   */
   tinyGoogleAI._setErrorCodes({
     FINISH_REASON_UNSPECIFIED: { text: 'Default value. This value is unused.' },
     STOP: { text: 'Natural stop point of the model or provided stop sequence.', hide: true },
@@ -122,7 +171,12 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
     },
   });
 
-  // Build Error
+  /**
+   * Builds a formatted error object into finalData based on the Google AI response.
+   *
+   * @param {object} result - The API response containing an error object.
+   * @param {object} finalData - The object that will receive the formatted error.
+   */
   const buildErrorData = (result, finalData) => {
     finalData.error = {
       code: typeof result.error.code === 'number' ? result.error.code : null,
@@ -133,7 +187,15 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
     if (result.error.details) finalData.error.details = result.error.details;
   };
 
-  // Build Request
+  /**
+   * Constructs the full request body for the Google Gemini API call.
+   *
+   * @param {object[]} data - An array of messages or content items to send.
+   * @param {object} [config={}] - Optional configuration for the model and generation parameters.
+   * @param {object|null} [cache=null] - Cached content to be reused (optional).
+   * @param {boolean} [cacheMode=false] - When true, disables generationConfig and safetySettings.
+   * @returns {object} requestBody - A fully structured request object for the Gemini API.
+   */
   const requestBuilder = (data, config = {}, cache = null, cacheMode = false) => {
     const requestBody = {};
     if (!cacheMode) requestBody.safetySettings = [];
@@ -195,15 +257,40 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
     return requestBody;
   };
 
-  // The Fetch API
   // https://ai.google.dev/api/generate-content?hl=pt-br#method:-models.generatecontent
+  /**
+   * Internal method that integrates with Google Gemini via generateContent or streamGenerateContent.
+   * It builds the request body, handles normal and streaming responses, parses tokens and content,
+   * and returns structured response data.
+   *
+   * @function
+   * @name tinyGoogleAI._setGenContent
+   * @param {string} apiKey - Your Google AI API key.
+   * @param {boolean} isStream - Whether the request is a streaming request.
+   * @param {object[]} data - An array of messages to send (prompt).
+   * @param {string} model - The Gemini model ID (e.g., "gemini-pro").
+   * @param {Function} streamingCallback - Callback for streaming results. Called with partials.
+   * @param {AbortController} controller - Optional abort controller for cancelling requests.
+   * @returns {Promise<object>} finalData - A promise that resolves with a structured response object:
+   * - finalData.contents: Parsed content output
+   * - finalData.tokenUsage: Usage info with prompt/candidate/total counts
+   * - finalData.modelVersion: Model version string
+   * - finalData._response: Raw response
+   * - finalData.error: (If error occurred) contains message, status, and code
+   */
   tinyGoogleAI._setGenContent(
     (apiKey, isStream, data, model, streamingCallback, controller) =>
       new Promise((resolve, reject) => {
         // Request
         const requestBody = requestBuilder(data);
 
-        // Usage metadata
+        /**
+         * Parses token usage metadata from the result object.
+         *
+         * @param {object} result - The API response containing usageMetadata.
+         * @returns {[object, boolean]} Tuple of metadata object and whether an error occurred.
+         * @private
+         */
         const buildUsageMetada = (result) => {
           const usageMetadata = {
             count: {
@@ -230,7 +317,13 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
           return [usageMetadata, needShowMetadataError];
         };
 
-        // Build content
+        /**
+         * Parses and adds content candidates to the final result object.
+         *
+         * @param {object} result - The result object from the API response.
+         * @param {object} finalData - The object where content candidates are appended.
+         * @private
+         */
         const buildContent = (result, finalData) => {
           if (Array.isArray(result.candidates)) {
             for (const index in result.candidates) {
@@ -249,6 +342,13 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
           }
         };
 
+        /**
+         * Final handler that transforms the result into a structured response.
+         *
+         * @param {object} result - The response from the Gemini API.
+         * @returns {object} finalData - Structured result with content, usage, model version, or error.
+         * @private
+         */
         const finalPromise = (result) => {
           // Prepare final data
           const finalData = { _response: result };
@@ -279,7 +379,15 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
           return finalData;
         };
 
-        // Streaming response
+        /**
+         * Handles streaming Gemini response via Fetch and TextDecoder.
+         * Buffers content and sends back partials using the streamingCallback.
+         *
+         * @async
+         * @param {ReadableStream} stream - The ReadableStream from fetch().body
+         * @returns {Promise<void>}
+         * @private
+         */
         const streamingResponse = async (stream) => {
           try {
             const reader = stream.getReader();
@@ -430,8 +538,46 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
       }),
   );
 
-  // Models
   // https://ai.google.dev/api/models?hl=pt_br#method:-models.list
+  /**
+   * Registers a function to fetch and organize the list of available Google AI models.
+   * The returned models are grouped into categories (`main`, `exp`, `others`) and sorted based on a predefined versioning logic.
+   *
+   * @function
+   * @name tinyGoogleAI._setGetModels
+   * @param {function(string, number, string=): Promise<Object>} callback - A function that takes an API key, an optional page size, and an optional page token,
+   * and returns a Promise with the processed models data.
+   *
+   * @returns {void}
+   *
+   * @example
+   * tinyGoogleAI._setGetModels((apiKey, pageSize, pageToken) => { ... });
+   *
+   * Returned object when resolved:
+   * {
+   *   _response: <original API response>,
+   *   newData: [<processed and inserted model objects>]
+   * }
+   *
+   * Model structure inserted into `tinyGoogleAI`:
+   * {
+   *   _response: <original model>,
+   *   category: { displayName, id, index },
+   *   index: <number>,
+   *   name: <string>,
+   *   id: <string>,
+   *   displayName: <string>,
+   *   version: <string>,
+   *   description: <string>,
+   *   inputTokenLimit: <number>,
+   *   outputTokenLimit: <number>,
+   *   temperature: <number>,
+   *   maxTemperature: <number>,
+   *   topP: <number>,
+   *   topK: <number>,
+   *   supportedGenerationMethods: [<string>]
+   * }
+   */
   tinyGoogleAI._setGetModels(
     (apiKey, pageSize, pageToken) =>
       new Promise((resolve, reject) =>
@@ -588,8 +734,31 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
       ),
   );
 
-  // Token Counter
   // https://ai.google.dev/api/tokens?hl=pt-br#method:-models.counttokens
+  /**
+   * Registers a function to calculate token usage for a given model and input data using Google AI's `countTokens` endpoint.
+   *
+   * @function
+   * @name tinyGoogleAI._setCountTokens
+   * @param {function(string, string, AbortController?, Object): Promise<Object>} callback - A function that takes an API key, model ID,
+   * an optional AbortController, and the input data for the token count request. Returns a Promise with token count information.
+   *
+   * @returns {void}
+   *
+   * @example
+   * tinyGoogleAI._setCountTokens((apiKey, model, controller, data) => { ... });
+   *
+   * Returned object when resolved:
+   * {
+   *   _response: <original API response>,
+   *   totalTokens: <number|null>,
+   *   cachedContentTokenCount: <number|null>,
+   *   promptTokensDetails: {
+   *     tokenCount: <number|null>,
+   *     modality: <string|null>
+   *   }
+   * }
+   */
   tinyGoogleAI._setCountTokens(
     (apiKey, model, controller, data) =>
       new Promise((resolve, reject) => {
@@ -660,12 +829,20 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
 };
 
 /**
- * Initializes and returns a TinyAiApi instance configured with the Google Gemini API.
+ * Creates and configures a new TinyAiInstance that is set up with the Google Gemini API.
  *
- * @function
+ * @class
+ * @extends TinyAiInstance
  * @param {string} GEMINI_API_KEY - The API key used to authenticate with the Google Gemini API.
  * @param {string} [MODEL_DATA='gemini-2.0-flash'] - Optional. The model identifier to use. Defaults to `'gemini-2.0-flash'`.
+ * @param {boolean} [isSingle=false] - If true, configures the instance to handle a single session only.
  * @returns {TinyAiInstance} A configured instance of TinyAiApi.
  */
-export const TinyGoogleAi = (GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash') =>
-  setTinyGoogleAi(new TinyAiInstance(), GEMINI_API_KEY, MODEL_DATA);
+class TinyGoogleAi extends TinyAiInstance {
+  constructor(GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash', isSingle = false) {
+    super(isSingle);
+    setTinyGoogleAi(this, GEMINI_API_KEY, MODEL_DATA);
+  }
+}
+
+export { TinyGoogleAi };
