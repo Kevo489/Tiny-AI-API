@@ -136,6 +136,13 @@ For advanced users, you can access several development tools to help with debugg
 
 ---
 
+## 📄 Terms of Use
+
+Please make sure to read the [Terms of Use](./TERMS.md) before using this project.  
+By using this project, you agree to follow the terms described in that document.
+
+---
+
 ## 📄 License
 
 This project is licensed under the AGPL-3.0 License - see the [LICENSE](./LICENSE) file for details.
