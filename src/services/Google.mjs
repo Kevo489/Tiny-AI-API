@@ -11,7 +11,7 @@ import TinyAiInstance from '../base.mjs';
  * @param {string} GEMINI_API_KEY - The API key for Google Gemini.
  * @param {string} [MODEL_DATA='gemini-2.0-flash'] - The model to use (default is 'gemini-2.0-flash').
  */
-export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash') => {
+export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash') {
   const apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
   tinyGoogleAI.setApiKey(GEMINI_API_KEY);
   tinyGoogleAI.setModel(MODEL_DATA);
@@ -826,7 +826,7 @@ export const setTinyGoogleAi = (tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
 
   // Complete
   return tinyGoogleAI;
-};
+}
 
 /**
  * Creates and configures a new TinyAiInstance that is set up with the Google Gemini API.
