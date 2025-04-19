@@ -1,3 +1,3 @@
-import { TinyAiInstance } from '../dist/index.mjs';
+import { setTinyGoogleAi, TinyAiInstance, TinyGoogleAi } from '../dist/index.mjs';
 
-console.log(TinyAiInstance);
+console.log(TinyAiInstance, TinyGoogleAi, setTinyGoogleAi);
