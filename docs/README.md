@@ -15,12 +15,12 @@ This documentation is designed to provide all the information you need to get up
 
 ### Table of Contents
 
-- [Introduction](./docs/introduction.md) - Get started with the basic setup and first steps.
-- [Configs](./docs/configs.md) - Session configuration settings and management.
-- [Content](./docs/content.md) - Manage session content, including prompts, dialogues, and files.
-- [Custom](./docs/custom.md) - Working with custom values and user-specific configurations.
-- [Dev](./docs/dev.md) - Development tools and utilities for advanced users.
-- [Models](./docs/models.md) - Model configuration and setup.
+- [Introduction](./introduction.md) - Get started with the basic setup and first steps.
+- [Configs](./configs.md) - Session configuration settings and management.
+- [Content](./content.md) - Manage session content, including prompts, dialogues, and files.
+- [Custom](./custom.md) - Working with custom values and user-specific configurations.
+- [Dev](./dev.md) - Development tools and utilities for advanced users.
+- [Models](./models.md) - Model configuration and setup.
 
 ---
 
