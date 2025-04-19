@@ -89,27 +89,27 @@ dist/
 
 ## 📚 API Reference
 
-### [Introduction](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/introduction.md) - Getting Started
+### [Introduction](./docs/introduction.md) - Getting Started
 
 Learn the basics of initializing a session, setting up models, and understanding the general structure of the API.
 
-### [Configs](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/configs.md) - Session Configuration
+### [Configs](./docs/configs.md) - Session Configuration
 
 Learn how to configure session data, including setting up system instructions, models, and file handling.
 
-### [Content](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/content.md) - Content Management
+### [Content](./docs/content.md) - Content Management
 
 Understand how to manage content like prompts, dialogues, file data, and how to retrieve and modify this content.
 
-### [Custom](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/custom.md) - Working with Custom Values
+### [Custom](./docs/custom.md) - Working with Custom Values
 
 Understand how to implement custom values, including session-specific data and any user-defined parameters.
 
-### [Dev](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/dev.md) - Development Tools
+### [Dev](./docs/dev.md) - Development Tools
 
 For developers looking to extend or debug the API, this section provides tools and guidelines for working with the internal workings of the library.
 
-### [Models](https://github.com/JasminDreasond/TinyAiApi/blob/main/docs/models.md) - Model Configuration
+### [Models](./docs/models.md) - Model Configuration
 
 Set up models and manage their configurations to interact with the API correctly. This includes handling different types of models and adjusting their parameters.
 
