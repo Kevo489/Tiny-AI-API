@@ -1,5 +1,5 @@
 import objHash from 'object-hash';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import { objType } from 'tiny-essentials';
 
 /**
@@ -15,13 +15,19 @@ import { objType } from 'tiny-essentials';
  * Documentation written with the assistance of OpenAI's ChatGPT.
  */
 class TinyAiInstance extends EventEmitter {
-  #_apiKey;
-  #_getModels;
-  #_countTokens;
-  #_genContentApi;
-  #_selectedHistory;
-  #_partTypes;
-  #_insertIntoHistory;
+  /** @type {string|null} */ #_apiKey = null;
+  /** @type {function|null} */ #_getModels = null;
+  /** @type {function|null} */ #_countTokens = null;
+  /** @type {function|null} */ #_genContentApi = null;
+  /** @type {string|null} */ #_selectedHistory = null;
+  /** @type {Record<string, function>} */ #_partTypes = {};
+  /** @type {function} */ #_insertIntoHistory = () => {};
+  /** @type {Record<string|number, string|{ text: string, hide?: boolean }>} */ _errorCode = {};
+  /** @type {string|null} */ _nextModelsPageToken = null;
+
+  /** @type {Array<*>} */ models = [];
+  /** @type {Object.<string, Record<string, any>>} */ history = {};
+  _isSingle = false;
 
   /**
    * Creates an instance of the TinyAiInstance class.
@@ -32,23 +38,15 @@ class TinyAiInstance extends EventEmitter {
    */
   constructor(isSingle = false) {
     super();
-    // Config
-    this.#_apiKey = null;
-    this._errorCode = null;
     this._isSingle = isSingle;
 
-    // History
-    this.#_selectedHistory = null;
-    this.history = {};
-
-    // Models
-    this.models = [];
-    this._nextModelsPageToken = null;
-
-    // Functions
-    this.#_genContentApi = null;
-    this.#_getModels = null;
-
+    /**
+     * Updates an existing entry in the session history.
+     *
+     * @param {string} id - The session identifier.
+     * @param {Record<string, any>} data - Data fields to update within the session.
+     * @returns {boolean} True if the update succeeded, false otherwise.
+     */
     this.#_insertIntoHistory = function (id, data) {
       if (typeof id === 'string' && this.history[id]) {
         for (const where in data) {
@@ -59,10 +57,13 @@ class TinyAiInstance extends EventEmitter {
       return false;
     };
 
-    // Build Parts
+    /**
+     * Parsers for different part types.
+     * @type {{ text: (input: any) => string|null, inlineData: (input: any) => { mime_type: string, data: string }|null }}
+     */
     this.#_partTypes = {
-      text: (text) => (typeof text === 'string' ? text : null),
-      inlineData: (data) => {
+      text: (/** @type {string} */ text) => (typeof text === 'string' ? text : null),
+      inlineData: (/** @type {{ mime_type: string; data: string; }} */ data) => {
         if (typeof data.mime_type === 'string' && typeof data.data === 'string') return data;
         return null;
       },
@@ -71,12 +72,21 @@ class TinyAiInstance extends EventEmitter {
     // Is single instance
     if (this._isSingle) {
       this.startDataId('main', true);
+      // @ts-ignore
       this.startDataId = null;
+      // @ts-ignore
       this.stopDataId = null;
+      // @ts-ignore
       this.selectDataId = null;
     }
   }
 
+  /**
+   * Capitalizes the first letter of the provided string.
+   *
+   * @param {string} str - The input string to capitalize.
+   * @returns {string} The string with the first character in uppercase.
+   */
   #capitalizeFirstLetter(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -95,17 +105,17 @@ class TinyAiInstance extends EventEmitter {
   setCustomValue(name, value, tokenAmount, id) {
     if (typeof name === 'string' && name.length > 0 && name !== 'customList') {
       // Prepare value to send
-      const sendValue = {};
-      sendValue[name] = value;
+      const sendValue = { [name]: value };
 
       // This value is extremely important for the import process to identify which custom values are being used
-      const history = this.getData(id);
-      if (history) {
+      const selectedId = this.getId(id);
+      if (selectedId && this.history[selectedId]) {
+        const history = this.history[selectedId];
         if (!Array.isArray(history.customList)) history.customList = [];
 
         // Validate the custom value
         if (value !== null) {
-          const props = history.customList.find((item) => item.name === name);
+          const props = history.customList.find((/** @type {*} */ item) => item.name === name);
           if (!props || typeof props.type !== 'string' || typeof props.name !== 'string') {
             if (typeof history[name] === 'undefined')
               history.customList.push({ name, type: objType(value) });
@@ -117,17 +127,16 @@ class TinyAiInstance extends EventEmitter {
         }
 
         // Add Tokens
-        const selectedId = this.getId(id);
         if (typeof tokenAmount === 'number') this.history[selectedId].tokens[name] = tokenAmount;
 
         // Send custom value into the history
         if (value !== null) {
-          this.#_insertIntoHistory(this.getId(id), sendValue);
+          this.#_insertIntoHistory(selectedId, sendValue);
           this.history[selectedId].hash[name] = objHash(value);
         }
 
         // Complete
-        this.emit(`set${this.#capitalizeFirstLetter(name)}`, value, this.getId(id));
+        this.emit(`set${this.#capitalizeFirstLetter(name)}`, value, selectedId);
         return;
       }
     }
@@ -145,33 +154,32 @@ class TinyAiInstance extends EventEmitter {
   resetCustomValue(name, id) {
     if (typeof name === 'string' && name.length > 0 && name !== 'customList') {
       // Prepare value to send
-      const sendValue = {};
-      sendValue[name] = null;
+      const sendValue = { [name]: null };
 
       // This value is extremely important for the import process to identify which custom values are being used
-      const history = this.getData(id);
-      if (history) {
+      const selectedId = this.getId(id);
+      if (selectedId && this.history[selectedId]) {
+        const history = this.history[selectedId];
         if (!Array.isArray(history.customList)) history.customList = [];
 
         // Validate the custom value
-        const props = history.customList.find((item) => item.name === name);
+        const props = history.customList.find((/** @type {*} */ item) => item.name === name);
         if (
           objType(props, 'object') &&
           typeof props.type === 'string' &&
           typeof props.name === 'string'
         ) {
           // Reset Tokens
-          const selectedId = this.getId(id);
           if (typeof this.history[selectedId].tokens[name] !== 'undefined')
             delete this.history[selectedId].tokens[name];
 
           // Reset custom value
-          this.#_insertIntoHistory(this.getId(id), sendValue);
+          this.#_insertIntoHistory(selectedId, sendValue);
           if (typeof this.history[selectedId].hash[name] !== 'undefined')
             delete this.history[selectedId].hash[name];
 
           // Complete
-          this.emit(`set${this.#capitalizeFirstLetter(name)}`, null, this.getId(id));
+          this.emit(`set${this.#capitalizeFirstLetter(name)}`, null, selectedId);
           return;
         }
       }
@@ -192,6 +200,7 @@ class TinyAiInstance extends EventEmitter {
     this.resetCustomValue(name, id);
     const history = this.getData(id);
     if (history) {
+      // @ts-ignore
       const index = history.customList.findIndex((item) => item.name === name);
       if (index > -1) history.customList.splice(index, 1);
       return;
@@ -217,7 +226,7 @@ class TinyAiInstance extends EventEmitter {
    * Retrieves the list of custom values from the selected session history.
    *
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Array} An array of custom values if available, or an empty array if no custom values exist.
+   * @returns {Array<*>} An array of custom values if available, or an empty array if no custom values exist.
    */
   getCustomValueList(id) {
     const history = this.getData(id);
@@ -452,22 +461,24 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Build content data for an AI session.
    *
-   * @param {Array} [contents] - An optional array to which the built content data will be pushed.
-   * @param {Object} item - The item containing content parts or a content object.
-   * @param {string} [role] - The role to be associated with the content (optional).
+   * @param {Array<*>} [contents] - An optional array to which the built content data will be pushed.
+   * @param {Record<string, any>} item - The item containing content parts or a content object.
+   * @param {string|null} [role] - The role to be associated with the content (optional).
    * @param {boolean} [rmFinishReason=false] - If true, removes the `finishReason` property from the content.
    * @returns {Object|undefined} The constructed content data object, or undefined if pushed to an array.
    */
-  buildContents(contents, item, role, rmFinishReason = false) {
+  buildContents(contents, item = {}, role = null, rmFinishReason = false) {
     // Content Data
     const tinyThis = this;
-    const contentData = { parts: [] };
+    /** @type {{ finishReason: string|number|undefined, parts: any[], role: string }} */
+    const contentData = { parts: [], finishReason: 'UNKNOWN', role: 'unknown' };
 
     // Role
     if (typeof role === 'string') contentData.role = role;
 
-    // Parts
+    /** @param {Record<string, any>} content */
     const insertPart = (content) => {
+      /** @type {Record<string, function>} */
       const tinyResult = {};
       for (const valName in content) {
         if (typeof tinyThis.#_partTypes[valName] === 'function')
@@ -480,11 +491,11 @@ class TinyAiInstance extends EventEmitter {
       for (const index in item.parts) insertPart(item.parts[index]);
     } else if (item.content) insertPart(item.content);
 
-    if (
-      !rmFinishReason &&
-      (typeof item.finishReason === 'string' || typeof item.finishReason === 'number')
-    )
-      contentData.finishReason = item.finishReason;
+    if (!rmFinishReason) {
+      if (typeof item.finishReason === 'string' || typeof item.finishReason === 'number')
+        contentData.finishReason = item.finishReason;
+    } else if (typeof contentData.finishReason !== 'undefined')
+      contentData.finishReason = undefined;
 
     // Complete
     if (Array.isArray(contents)) return contents.push(contentData);
@@ -527,7 +538,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {number} [pageSize=50] - The number of models to retrieve per page. Defaults to 50.
    * @param {string|null} [pageToken=null] - The token for the next page of models, if available. Defaults to null.
-   * @returns {Array} The list of models retrieved.
+   * @returns {Array<*>} The list of models retrieved.
    * @throws {Error} If no model list API function is defined.
    */
   getModels(pageSize = 50, pageToken = null) {
@@ -539,10 +550,10 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Get the list of models for the AI session.
    *
-   * @returns {Array} The list of models.
+   * @returns {Array<*>} The list of models.
    */
   getModelsList() {
-    return this.models;
+    return Array.isArray(this.models) ? this.models : [];
   }
 
   /**
@@ -557,6 +568,7 @@ class TinyAiInstance extends EventEmitter {
     else {
       for (const index in this.models) {
         if (this.models[index].category) {
+          // @ts-ignore
           const modelCategory = this.models[index].data.find((item) => item.id === id);
           if (modelCategory) return modelCategory;
         }
@@ -580,6 +592,8 @@ class TinyAiInstance extends EventEmitter {
    * If the model already exists, it will not be inserted again.
    *
    * @param {Object} model - The model to insert.
+   * @param {*} model._response - The raw response.
+   * @param {number} model.index - The index position.
    * @param {string} model.id - The unique identifier for the model.
    * @param {string} [model.name] - The name of the model.
    * @param {string} [model.displayName] - The display name of the model.
@@ -599,8 +613,10 @@ class TinyAiInstance extends EventEmitter {
    * @returns {Object|null} The inserted model data, or null if the model already exists.
    */
   _insertNewModel(model) {
+    if (!objType(model, 'object')) throw new Error('Model data must be a valid object.');
+
     if (this.models.findIndex((item) => item.id === model.id) < 0) {
-      // Model data
+      /** @type {Record<string, any>} */
       const newData = {
         _response: model._response,
         index: typeof model.index === 'number' ? model.index : 9999999,
@@ -635,6 +651,7 @@ class TinyAiInstance extends EventEmitter {
         typeof model.category.index === 'number'
       ) {
         // Check category
+        // @ts-ignore
         let category = this.models.find((item) => item.category === model.category.id);
         // Insert new category
         if (!category) {
@@ -647,9 +664,12 @@ class TinyAiInstance extends EventEmitter {
           this.models.push(category);
         }
 
-        // Complete and sort data
+        // Compare function that sorts objects by their `index` property.
         category.data.push(newData);
-        category.data.sort((a, b) => a.index - b.index);
+        category.data.sort(
+          /** @param {{ index: number, [key: string]: any }} a @param {{ index: number, [key: string]: any }} b */
+          (a, b) => a.index - b.index,
+        );
       }
 
       // Normal mode
@@ -693,7 +713,7 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Sets the error codes for the current session.
    *
-   * @param {Object} errors - The error codes to set, typically an object containing error code definitions.
+   * @param {Record<string|number, string|{ text: string, hide?: boolean }>} errors - The error codes to set, typically an object containing error code definitions.
    * @returns {void}
    */
   _setErrorCodes(errors) {
@@ -711,7 +731,8 @@ class TinyAiInstance extends EventEmitter {
       const errData = this._errorCode[code];
       if (errData) {
         if (typeof errData === 'string') return { text: errData };
-        else if (typeof errData.text === 'string') return errData;
+        // @ts-ignore
+        else if (objType(errData, 'object') && typeof errData.text === 'string') return errData;
       }
     }
     return null;
@@ -779,17 +800,21 @@ class TinyAiInstance extends EventEmitter {
    * @returns {string|null} The selected session history ID, or `null` if no history ID is selected.
    */
   getId(id) {
-    return id && !this._isSingle ? id : this.#_selectedHistory;
+    const result = id && !this._isSingle ? id : this.#_selectedHistory;
+    if (typeof result === 'string') return result;
+    return null;
   }
 
   /**
    * Get the data associated with a specific session history ID.
    *
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The data associated with the session ID, or `null` if no data exists for that ID.
+   * @returns {Record<string, any>|null} The data associated with the session ID, or `null` if no data exists for that ID.
    */
   getData(id) {
-    return this.history[this.getId(id)] || null;
+    const selectedId = this.getId(id);
+    if (selectedId && this.history[selectedId]) return this.history[selectedId];
+    return null;
   }
 
   /**
@@ -909,7 +934,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {number} index - The index of the data entry to retrieve.
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Array|null} The data entry at the specified index, or `null` if the index is out of bounds or no data exists for the given session ID.
+   * @returns {Object|null} The data entry at the specified index, or `null` if the index is out of bounds or no data exists for the given session ID.
    */
   getMsgByIndex(index, id) {
     const history = this.getData(id);
@@ -1070,7 +1095,7 @@ class TinyAiInstance extends EventEmitter {
    */
   addData(data, tokenData = { count: null }, id = undefined) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId]) {
+    if (selectedId && this.history[selectedId]) {
       if (typeof this.history[selectedId].nextId !== 'number') this.history[selectedId].nextId = 0;
       const newId = this.history[selectedId].nextId;
       this.history[selectedId].nextId++;
@@ -1101,7 +1126,7 @@ class TinyAiInstance extends EventEmitter {
    */
   setPrompt(promptData, tokenAmount, id) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId]) {
+    if (selectedId && this.history[selectedId]) {
       if (typeof promptData === 'string') {
         const hash = objHash(promptData);
         this.history[selectedId].prompt = promptData;
@@ -1124,6 +1149,7 @@ class TinyAiInstance extends EventEmitter {
   getPrompt(id) {
     const selectedId = this.getId(id);
     if (
+      selectedId &&
       this.history[selectedId] &&
       typeof this.history[selectedId].prompt === 'string' &&
       this.history[selectedId].prompt.length > 0
@@ -1144,7 +1170,7 @@ class TinyAiInstance extends EventEmitter {
    */
   setFirstDialogue(dialogue, tokenAmount, id) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId]) {
+    if (selectedId && this.history[selectedId]) {
       if (typeof dialogue === 'string') {
         const hash = objHash(dialogue);
         this.history[selectedId].firstDialogue = dialogue;
@@ -1168,6 +1194,7 @@ class TinyAiInstance extends EventEmitter {
   getFirstDialogue(id) {
     const selectedId = this.getId(id);
     if (
+      selectedId &&
       this.history[selectedId] &&
       typeof this.history[selectedId].firstDialogue === 'string' &&
       this.history[selectedId].firstDialogue.length > 0
@@ -1190,12 +1217,13 @@ class TinyAiInstance extends EventEmitter {
    */
   setFileData(mime, data, isBase64 = false, tokenAmount = undefined, id = undefined) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId]) {
+    if (selectedId && this.history[selectedId]) {
       let hash;
       if (typeof data === 'string' && typeof mime === 'string') {
         this.history[selectedId].file = {
           mime,
           data,
+          // @ts-ignore
           base64: !isBase64 ? Base64.encode(data) : data,
         };
         hash = objHash(this.history[selectedId].file);
@@ -1218,7 +1246,7 @@ class TinyAiInstance extends EventEmitter {
    */
   removeFileData(id) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId]) {
+    if (selectedId && this.history[selectedId]) {
       delete this.history[selectedId].file;
       delete this.history[selectedId].hash.file;
       delete this.history[selectedId].tokens.file;
@@ -1238,6 +1266,7 @@ class TinyAiInstance extends EventEmitter {
   getFileData(id) {
     const selectedId = this.getId(id);
     if (
+      selectedId &&
       this.history[selectedId] &&
       this.history[selectedId].file &&
       typeof this.history[selectedId].file.data === 'string' &&
@@ -1259,7 +1288,7 @@ class TinyAiInstance extends EventEmitter {
    */
   setSystemInstruction(data, tokenAmount, id) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId]) {
+    if (selectedId && this.history[selectedId]) {
       if (typeof data === 'string') {
         const hash = objHash(data);
         this.history[selectedId].systemInstruction = data;
@@ -1283,6 +1312,7 @@ class TinyAiInstance extends EventEmitter {
   getSystemInstruction(id) {
     const selectedId = this.getId(id);
     if (
+      selectedId &&
       this.history[selectedId] &&
       typeof this.history[selectedId].systemInstruction === 'string'
     ) {
@@ -1300,7 +1330,11 @@ class TinyAiInstance extends EventEmitter {
    */
   getTokens(where, id) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId] && typeof this.history[selectedId].tokens[where] === 'number')
+    if (
+      selectedId &&
+      this.history[selectedId] &&
+      typeof this.history[selectedId].tokens[where] === 'number'
+    )
       return this.history[selectedId].tokens[where];
     return null;
   }
@@ -1314,7 +1348,11 @@ class TinyAiInstance extends EventEmitter {
    */
   getHash(where, id) {
     const selectedId = this.getId(id);
-    if (this.history[selectedId] && typeof this.history[selectedId].hash[where] === 'string')
+    if (
+      selectedId &&
+      this.history[selectedId] &&
+      typeof this.history[selectedId].hash[where] === 'string'
+    )
       return this.history[selectedId].hash[where];
     return null;
   }

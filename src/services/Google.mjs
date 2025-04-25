@@ -172,12 +172,15 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
   });
 
   /**
-   * Builds a formatted error object into finalData based on the Google AI response.
-   *
-   * @param {object} result - The API response containing an error object.
-   * @param {object} finalData - The object that will receive the formatted error.
+   * @param {*} [result={ error: { code: null, message: null, status: null, details: null } }]
+   * @param {*} [finalData={ error: { code: null, message: null, status: null, details: null } }]
    */
-  const buildErrorData = (result, finalData) => {
+  const buildErrorData = (
+    result = { error: { code: null, message: null, status: null, details: null } },
+    finalData = { error: { code: null, message: null, status: null, details: null } },
+  ) => {
+    if (typeof result === 'undefined') throw new Error('Invalid result or missing error object');
+
     finalData.error = {
       code: typeof result.error.code === 'number' ? result.error.code : null,
       message: typeof result.error.message === 'string' ? result.error.message : null,
@@ -190,13 +193,33 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
   /**
    * Constructs the full request body for the Google Gemini API call.
    *
-   * @param {object[]} data - An array of messages or content items to send.
-   * @param {object} [config={}] - Optional configuration for the model and generation parameters.
-   * @param {object|null} [cache=null] - Cached content to be reused (optional).
-   * @param {boolean} [cacheMode=false] - When true, disables generationConfig and safetySettings.
-   * @returns {object} requestBody - A fully structured request object for the Gemini API.
+   * @param {*} data
+   * @param {*} [config={}]
+   * @param {*} [cache=null]
+   * @param {boolean} [cacheMode=false]
+   * @returns {*}
    */
   const requestBuilder = (data, config = {}, cache = null, cacheMode = false) => {
+    /**
+     * @type {{
+     * safetySettings: {};
+     * model: any;
+     * ttl: any;
+     * name: any;
+     * contents: Array<any>;
+     * systemInstruction: any;
+     * generationConfig: {
+     *    maxOutputTokens: any;
+     *    temperature: any;
+     *    topP: any;
+     *    topK: any;
+     *    presencePenalty: any;
+     *    frequencyPenalty: any;
+     *    enableEnhancedCivicAnswers: any;
+     * };
+     *  cachedContent: any;
+     * }}
+     */
     const requestBody = {};
     if (!cacheMode) requestBody.safetySettings = [];
 
@@ -218,7 +241,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
           tinyGoogleAI.buildContents(requestBody.contents, item, item.role, true);
         } else {
           if (!Array.isArray(requestBody.systemInstruction)) requestBody.systemInstruction = [];
-          tinyGoogleAI.buildContents(requestBody.systemInstruction, item, true);
+          tinyGoogleAI.buildContents(requestBody.systemInstruction, item, undefined, true);
           requestBody.systemInstruction = requestBody.systemInstruction[0];
         }
       }
@@ -279,6 +302,15 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
    * - finalData.error: (If error occurred) contains message, status, and code
    */
   tinyGoogleAI._setGenContent(
+    /**
+     * @param {string} apiKey
+     * @param {boolean} isStream
+     * @param {any} data
+     * @param {string} model
+     * @param {function} streamingCallback
+     * @param {AbortController} controller
+     * @returns {any}
+     */
     (apiKey, isStream, data, model, streamingCallback, controller) =>
       new Promise((resolve, reject) => {
         // Request
@@ -287,7 +319,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
         /**
          * Parses token usage metadata from the result object.
          *
-         * @param {object} result - The API response containing usageMetadata.
+         * @param {*} result - The API response containing usageMetadata.
          * @returns {[object, boolean]} Tuple of metadata object and whether an error occurred.
          * @private
          */
@@ -320,8 +352,8 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
         /**
          * Parses and adds content candidates to the final result object.
          *
-         * @param {object} result - The result object from the API response.
-         * @param {object} finalData - The object where content candidates are appended.
+         * @param {*} result - The result object from the API response.
+         * @param {*} finalData - The object where content candidates are appended.
          * @private
          */
         const buildContent = (result, finalData) => {
@@ -345,12 +377,13 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
         /**
          * Final handler that transforms the result into a structured response.
          *
-         * @param {object} result - The response from the Gemini API.
-         * @returns {object} finalData - Structured result with content, usage, model version, or error.
+         * @param {*} result - The response from the Gemini API.
+         * @returns {*} finalData - Structured result with content, usage, model version, or error.
          * @private
          */
         const finalPromise = (result) => {
           // Prepare final data
+          /** @type {*} */
           const finalData = { _response: result };
           if (!result.error) {
             // Content
@@ -395,6 +428,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
             let done = false;
             let countData = 0;
             let streamResult = {};
+            /** @type {*} */
             const streamCache = [];
 
             // Read streaming
@@ -425,9 +459,11 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
                         for (const indexResult in jsonChunk) {
                           const result = jsonChunk[indexResult];
                           if (result) {
+                            /** @type {*} */
                             const tinyData = { contents: [] };
                             buildContent(result, tinyData);
 
+                            /** @type {*} */
                             const tinyResult = {
                               tokenUsage: buildUsageMetada(result)[0],
                             };
@@ -579,6 +615,12 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
    * }
    */
   tinyGoogleAI._setGetModels(
+    /**
+     * @param {string} apiKey
+     * @param {number} pageSize
+     * @param {string} pageToken
+     * @returns {any}
+     */
     (apiKey, pageSize, pageToken) =>
       new Promise((resolve, reject) =>
         fetch(
@@ -594,6 +636,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
           .then((res) => res.json())
           .then((result) => {
             // Prepare final data
+            /** @type {*} */
             const finalData = { _response: result };
             if (!result.error) {
               finalData.newData = [];
@@ -602,6 +645,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
               tinyGoogleAI._setNextModelsPageToken(result.nextPageToken);
 
               // Categories
+              /** @type {*} */
               const newModels = [
                 {
                   category: 'main',
@@ -624,6 +668,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
               ];
 
               const modelOrderIndexUsed = { main: -1, exp: -1 };
+              /** @type {*} */
               const modelOrder = {};
 
               const addModelVersions = (version = '') => {
@@ -682,7 +727,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
                   // Add Category
                   if (modelOrder[id] && typeof modelOrder[id].category === 'string') {
                     const category = newModels.find(
-                      (item) => item.category === modelOrder[id].category,
+                      (/** @type {any} */ item) => item.category === modelOrder[id].category,
                     );
                     if (category) category.data.push(result.models[index]);
                     // Nope
@@ -760,9 +805,17 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
    * }
    */
   tinyGoogleAI._setCountTokens(
+    /**
+     * @param {string} apiKey
+     * @param {string} model
+     * @param {AbortController} controller
+     * @param {any} data
+     * @returns {any}
+     */
     (apiKey, model, controller, data) =>
       new Promise((resolve, reject) => {
         const dataContent = requestBuilder(data);
+        /** @type {*} */
         const modelInfo = tinyGoogleAI.getModelData(model);
         dataContent.model = modelInfo?.name;
         if (Array.isArray(dataContent.contents) && dataContent.contents.length > 0) {
@@ -779,6 +832,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
             // Request
             .then((res) => res.json())
             .then((result) => {
+              /** @type {*} */
               const finalData = { _response: result };
               if (!result.error) {
                 // Total tokens
@@ -839,7 +893,7 @@ export function setTinyGoogleAi(tinyGoogleAI, GEMINI_API_KEY, MODEL_DATA = 'gemi
  * @returns {TinyAiInstance} A configured instance of TinyAiApi.
  */
 class TinyGoogleAi extends TinyAiInstance {
-  constructor(GEMINI_API_KEY, MODEL_DATA = 'gemini-2.0-flash', isSingle = false) {
+  constructor(GEMINI_API_KEY = '', MODEL_DATA = 'gemini-2.0-flash', isSingle = false) {
     super(isSingle);
     setTinyGoogleAi(this, GEMINI_API_KEY, MODEL_DATA);
   }

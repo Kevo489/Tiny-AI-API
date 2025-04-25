@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Model Cache creator
 // https://ai.google.dev/api/caching?hl=pt-br#method:-cachedcontents.create
 tinyGoogleAI._setInsertServerCache(

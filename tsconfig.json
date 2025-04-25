@@ -2,14 +2,15 @@
     "compilerOptions": {
         "outDir": "./dist",
         "allowJs": true,
-        "checkJs": false,
+        "checkJs": true,
         "declaration": true,
         "declarationMap": false,
         "declarationDir": "./dist",
         "emitDeclarationOnly": false,
         "target": "ESNext",
         "strict": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
     },
     "include": ["src"],
     "exclude": ["node_modules"]

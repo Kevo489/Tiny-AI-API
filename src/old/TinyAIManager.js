@@ -1,3 +1,4 @@
+// @ts-nocheck
 class TinyAiInstance {
   #_apiKey;
 
