@@ -459,13 +459,20 @@ class TinyAiInstance extends EventEmitter {
   }
 
   /**
+   * @typedef {Object} AIContentData
+   * @property {Array<Record<'text' | 'inlineData', string | { mime_type: string, data: string } | null>>} parts
+   * @property {string|undefined} [role]
+   * @property {string|number|undefined} [finishReason]
+   */
+
+  /**
    * Build content data for an AI session.
    *
    * @param {Array<*>} [contents] - An optional array to which the built content data will be pushed.
    * @param {Record<string, any>} item - The item containing content parts or a content object.
    * @param {string|null} [role] - The role to be associated with the content (optional).
    * @param {boolean} [rmFinishReason=false] - If true, removes the `finishReason` property from the content.
-   * @returns {Object|undefined} The constructed content data object, or undefined if pushed to an array.
+   * @returns {AIContentData|number} The constructed content data object, or array length if pushed to an array.
    */
   buildContents(contents, item = {}, role = null, rmFinishReason = false) {
     // Content Data
@@ -491,11 +498,9 @@ class TinyAiInstance extends EventEmitter {
       for (const index in item.parts) insertPart(item.parts[index]);
     } else if (item.content) insertPart(item.content);
 
-    if (!rmFinishReason) {
+    if (!rmFinishReason)
       if (typeof item.finishReason === 'string' || typeof item.finishReason === 'number')
         contentData.finishReason = item.finishReason;
-    } else if (typeof contentData.finishReason !== 'undefined')
-      contentData.finishReason = undefined;
 
     // Complete
     if (Array.isArray(contents)) return contents.push(contentData);
