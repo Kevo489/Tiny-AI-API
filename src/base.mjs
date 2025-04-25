@@ -470,8 +470,8 @@ class TinyAiInstance extends EventEmitter {
   buildContents(contents, item = {}, role = null, rmFinishReason = false) {
     // Content Data
     const tinyThis = this;
-    /** @type {{ finishReason: string|number|undefined, parts: any[], role: string }} */
-    const contentData = { parts: [], finishReason: 'UNKNOWN', role: 'unknown' };
+    /** @type {{ finishReason: string|number|undefined, parts: any[], role: string|undefined }} */
+    const contentData = { parts: [], finishReason: undefined, role: undefined };
 
     // Role
     if (typeof role === 'string') contentData.role = role;
