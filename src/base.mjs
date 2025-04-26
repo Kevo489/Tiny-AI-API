@@ -15,6 +15,28 @@ import { objType } from 'tiny-essentials';
  * Documentation written with the assistance of OpenAI's ChatGPT.
  */
 class TinyAiInstance extends EventEmitter {
+  /**
+   * @typedef {Object} AIContentData
+   * @property {Array<Record<'text' | 'inlineData', string | { mime_type: string, data: string } | null>>} parts
+   * @property {string|undefined} [role]
+   * @property {string|number|undefined} [finishReason]
+   */
+
+  /**
+   * @typedef {Record<string, any> & {
+   *   data: Array<AIContentData>,
+   *   ids: Array<string>,
+   *   tokens: { data: Array<TokenCount>; [key: string]: * },
+   *   hash: { data: Array<string>; [key: string]: * },
+   *   systemInstruction: string|null,
+   *   model: string|null
+   * }} SessionData
+   */
+
+  /**
+   * @typedef {{ count: number|null, hide?: boolean }} TokenCount
+   */
+
   /** @type {string|null} */ #_apiKey = null;
   /** @type {function|null} */ #_getModels = null;
   /** @type {function|null} */ #_countTokens = null;
@@ -26,7 +48,7 @@ class TinyAiInstance extends EventEmitter {
   /** @type {string|null} */ _nextModelsPageToken = null;
 
   /** @type {Array<*>} */ models = [];
-  /** @type {Object.<string, Record<string, any>>} */ history = {};
+  /** @type {Object.<string, SessionData>} */ history = {};
   _isSingle = false;
 
   /**
@@ -459,13 +481,6 @@ class TinyAiInstance extends EventEmitter {
   }
 
   /**
-   * @typedef {Object} AIContentData
-   * @property {Array<Record<'text' | 'inlineData', string | { mime_type: string, data: string } | null>>} parts
-   * @property {string|undefined} [role]
-   * @property {string|number|undefined} [finishReason]
-   */
-
-  /**
    * Build content data for an AI session.
    *
    * @param {Array<*>} [contents] - An optional array to which the built content data will be pushed.
@@ -565,7 +580,7 @@ class TinyAiInstance extends EventEmitter {
    * Get model data from the list of models.
    *
    * @param {string} id - The model data id to search for in the models list.
-   * @returns {Object|null} The model data if found, otherwise null.
+   * @returns {Record<string, any>|null} The model data if found, otherwise null.
    */
   getModelData(id) {
     const model = this.models.find((item) => item.id === id);
@@ -615,7 +630,7 @@ class TinyAiInstance extends EventEmitter {
    * @param {string} model.category.id - The unique identifier for the category.
    * @param {string} model.category.displayName - The display name of the category.
    * @param {number} model.category.index - The index of the category.
-   * @returns {Object|null} The inserted model data, or null if the model already exists.
+   * @returns {Record<string, any>|null} The inserted model data, or null if the model already exists.
    */
   _insertNewModel(model) {
     if (!objType(model, 'object')) throw new Error('Model data must be a valid object.');
@@ -703,11 +718,11 @@ class TinyAiInstance extends EventEmitter {
    * Counts the tokens based on the provided data and model, using a defined token counting function.
    * If the function to count tokens is not set, an error is thrown.
    *
-   * @param {Object} data - The data that needs to be tokenized.
+   * @param {Record<string, any>} data - The data that needs to be tokenized.
    * @param {string} model - The model to use for counting tokens. If not provided, the default model is used.
-   * @param {Object} controller - The controller that manages the process or settings for counting tokens.
+   * @param {AbortController} controller - The controller that manages the process or settings for counting tokens.
    * @throws {Error} Throws an error if no token counting function is defined.
-   * @returns {Object} The count of tokens.
+   * @returns {Record<string, any>} The count of tokens.
    */
   countTokens(data, model, controller) {
     if (typeof this.#_countTokens === 'function')
@@ -716,9 +731,13 @@ class TinyAiInstance extends EventEmitter {
   }
 
   /**
+   * @typedef {{ text: string, hide?: boolean }} ErrorCode
+   */
+
+  /**
    * Sets the error codes for the current session.
    *
-   * @param {Record<string|number, string|{ text: string, hide?: boolean }>} errors - The error codes to set, typically an object containing error code definitions.
+   * @param {Record<string|number, string|ErrorCode>} errors - The error codes to set, typically an object containing error code definitions.
    * @returns {void}
    */
   _setErrorCodes(errors) {
@@ -729,7 +748,7 @@ class TinyAiInstance extends EventEmitter {
    * Get error details based on the provided error code.
    *
    * @param {string|number} code - The error code to look up.
-   * @returns {Object|null} An object containing the error message, or null if no error is found.
+   * @returns {ErrorCode|null} An object containing the error message, or null if no error is found.
    */
   getErrorCode(code) {
     if (this._errorCode) {
@@ -756,11 +775,11 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Generates content for the AI session.
    *
-   * @param {Object} data - The data for content generation.
+   * @param {Record<string, any>} data - The data for content generation.
    * @param {string} model - The model to be used for content generation. If not provided, the default model is used.
-   * @param {Object} controller - The controller managing the content generation process.
+   * @param {AbortController} controller - The controller managing the content generation process.
    * @param {Function} [streamCallback] - The callback function for streaming content (optional).
-   * @returns {Object} The generated content returned by the API.
+   * @returns {Record<string, any>} The generated content returned by the API.
    * @throws {Error} If no content generator API script is defined.
    */
   genContent(data, model, controller, streamCallback) {
@@ -814,7 +833,7 @@ class TinyAiInstance extends EventEmitter {
    * Get the data associated with a specific session history ID.
    *
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Record<string, any>|null} The data associated with the session ID, or `null` if no data exists for that ID.
+   * @returns {SessionData|null} The data associated with the session ID, or `null` if no data exists for that ID.
    */
   getData(id) {
     const selectedId = this.getId(id);
@@ -858,7 +877,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {number} msgIndex - The index of the message in the session history.
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The token data associated with the message at the specified index, or `null` if the data is not found.
+   * @returns {TokenCount|null} The token data associated with the message at the specified index, or `null` if the data is not found.
    */
   getMsgTokensByIndex(msgIndex, id) {
     const history = this.getData(id);
@@ -877,7 +896,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {string} msgId - The unique ID of the message in the session history.
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The token data associated with the message with the given ID, or `null` if the message is not found.
+   * @returns {TokenCount|null} The token data associated with the message with the given ID, or `null` if the message is not found.
    */
   getMsgTokensById(msgId, id) {
     const history = this.getData(id);
@@ -939,7 +958,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {number} index - The index of the data entry to retrieve.
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The data entry at the specified index, or `null` if the index is out of bounds or no data exists for the given session ID.
+   * @returns {AIContentData|null} The data entry at the specified index, or `null` if the index is out of bounds or no data exists for the given session ID.
    */
   getMsgByIndex(index, id) {
     const history = this.getData(id);
@@ -952,7 +971,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {string} msgId - The ID of the message to retrieve.
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The message data associated with the given ID, or `null` if the message ID is invalid or does not exist.
+   * @returns {AIContentData|null} The message data associated with the given ID, or `null` if the message ID is invalid or does not exist.
    */
   getMsgById(msgId, id) {
     const history = this.getData(id);
@@ -1014,8 +1033,8 @@ class TinyAiInstance extends EventEmitter {
    * Replaces an entry at the specified index in the session history with new data.
    *
    * @param {number} index - The index of the entry to replace.
-   * @param {Object} [data] - The new data to replace the existing entry (optional).
-   * @param {number} [tokens] - The token count associated with the new entry (optional).
+   * @param {AIContentData} [data] - The new data to replace the existing entry (optional).
+   * @param {TokenCount} [tokens] - The token count associated with the new entry (optional).
    * @param {string} [id] - The session ID (optional). If omitted, the currently selected session history ID will be used.
    * @returns {boolean} `true` if the entry was successfully replaced, `false` if the index is invalid or the entry does not exist.
    */
@@ -1052,7 +1071,7 @@ class TinyAiInstance extends EventEmitter {
    * Retrieve the data of the last entry in the session history.
    *
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The data of the last entry in the session history, or `null` if the history is empty or invalid.
+   * @returns {AIContentData|null} The data of the last entry in the session history, or `null` if the history is empty or invalid.
    */
   getLastIndexData(id) {
     const history = this.getData(id);
@@ -1077,7 +1096,7 @@ class TinyAiInstance extends EventEmitter {
    * Retrieve the first entry in the session history.
    *
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The first entry of the session history, or `null` if no entry exists.
+   * @returns {AIContentData|null} The first entry of the session history, or `null` if no entry exists.
    */
   getFirstIndexData(id) {
     const history = this.getData(id);
@@ -1092,8 +1111,8 @@ class TinyAiInstance extends EventEmitter {
    * **Note**: The `tokenData` parameter is optional and can be used to track token-related data associated with the new entry.
    * This may include token counts, but this script does not manage token counting automatically. Developers must implement token management separately if necessary.
    *
-   * @param {Object} data - The data to be added to the session history.
-   * @param {Object} [tokenData={count: null}] - Optional token-related data to be associated with the new entry. Defaults to `{count: null}`.
+   * @param {AIContentData} data - The data to be added to the session history.
+   * @param {TokenCount} [tokenData={count: null}] - Optional token-related data to be associated with the new entry. Defaults to `{count: null}`.
    * @param {string} [id] - The session history ID. If omitted, the currently selected session ID will be used.
    * @returns {number} The new ID of the added data entry.
    * @throws {Error} If the provided session ID is invalid or the session ID does not exist in history.
@@ -1265,7 +1284,7 @@ class TinyAiInstance extends EventEmitter {
    * Retrieves file data from the selected session history.
    *
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
-   * @returns {Object|null} The file data, including MIME type and encoded content, or null if no file data is found.
+   * @returns {{data: string, mime: string}|null} The file data, including MIME type and encoded content, or null if no file data is found.
    * @throws {Error} If no valid session history ID is found.
    */
   getFileData(id) {
@@ -1367,7 +1386,7 @@ class TinyAiInstance extends EventEmitter {
    *
    * @param {string} id - The session ID for the new data session.
    * @param {boolean} [selected=false] - A flag to indicate whether this session should be selected as the active session.
-   * @returns {Object} The newly created session data, which includes an empty data array, an empty IDs array, and null values for system instruction and model.
+   * @returns {SessionData} The newly created session data, which includes an empty data array, an empty IDs array, and null values for system instruction and model.
    */
   startDataId(id, selected = false) {
     this.history[id] = {
