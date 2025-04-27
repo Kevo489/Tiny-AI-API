@@ -56,7 +56,7 @@ class TinyAiInstance extends EventEmitter {
    * Initializes internal variables, sets up initial configurations for handling AI models,
    * session history, and content generation, with the option to use a single or multiple instances.
    *
-   * @param {boolean} isSingle - If true, configures the instance to handle a single session only.
+   * @param {boolean} [isSingle] - If true, configures the instance to handle a single session only.
    */
   constructor(isSingle = false) {
     super();
@@ -719,8 +719,8 @@ class TinyAiInstance extends EventEmitter {
    * If the function to count tokens is not set, an error is thrown.
    *
    * @param {Record<string, any>} data - The data that needs to be tokenized.
-   * @param {string} model - The model to use for counting tokens. If not provided, the default model is used.
-   * @param {AbortController} controller - The controller that manages the process or settings for counting tokens.
+   * @param {string} [model] - The model to use for counting tokens. If not provided, the default model is used.
+   * @param {AbortController} [controller] - The controller that manages the process or settings for counting tokens.
    * @throws {Error} Throws an error if no token counting function is defined.
    * @returns {Record<string, any>} The count of tokens.
    */
@@ -776,8 +776,8 @@ class TinyAiInstance extends EventEmitter {
    * Generates content for the AI session.
    *
    * @param {Record<string, any>} data - The data for content generation.
-   * @param {string} model - The model to be used for content generation. If not provided, the default model is used.
-   * @param {AbortController} controller - The controller managing the content generation process.
+   * @param {string} [model] - The model to be used for content generation. If not provided, the default model is used.
+   * @param {AbortController} [controller] - The controller managing the content generation process.
    * @param {Function} [streamCallback] - The callback function for streaming content (optional).
    * @returns {Record<string, any>} The generated content returned by the API.
    * @throws {Error} If no content generator API script is defined.
@@ -1143,7 +1143,7 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Sets a prompt for the selected session history.
    *
-   * @param {string} promptData - The prompt to be set for the session.
+   * @param {string} [promptData] - The prompt to be set for the session.
    * @param {number} [tokenAmount] - The number of tokens associated with the prompt (optional).
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
    * @throws {Error} If the provided session ID is invalid or the prompt data is not a string.
@@ -1186,7 +1186,7 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Sets the first dialogue for the selected session history.
    *
-   * @param {string} dialogue - The dialogue to set as the first dialogue.
+   * @param {string} [dialogue] - The dialogue to set as the first dialogue.
    * @param {number} [tokenAmount] - The number of tokens associated with the dialogue (optional).
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
    * @throws {Error} Throws an error if the session ID is invalid or the dialogue is not a string.
@@ -1231,8 +1231,8 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Sets file data for the selected session history.
    *
-   * @param {string} mime - The MIME type of the file (e.g., 'text/plain', 'application/pdf').
-   * @param {string} data - The file content, either as a string or base64-encoded.
+   * @param {string} [mime] - The MIME type of the file (e.g., 'text/plain', 'application/pdf').
+   * @param {string} [data] - The file content, either as a string or base64-encoded.
    * @param {boolean} [isBase64=false] - A flag indicating whether the `data` is already base64-encoded. Defaults to false.
    * @param {number} [tokenAmount] - The token count associated with the file data (optional).
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
@@ -1304,7 +1304,7 @@ class TinyAiInstance extends EventEmitter {
   /**
    * Sets a system instruction for the selected session history.
    *
-   * @param {string} data - The system instruction to set.
+   * @param {string} [data] - The system instruction to set.
    * @param {number} [tokenAmount] - The token count associated with the system instruction (optional).
    * @param {string} [id] - The session ID. If omitted, the currently selected session history ID will be used.
    * @throws {Error} If the session history ID is invalid or the provided data is not a string.
