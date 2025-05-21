@@ -14,7 +14,214 @@ import { objType } from 'tiny-essentials';
  *
  * Documentation written with the assistance of OpenAI's ChatGPT.
  */
-class TinyAiInstance extends EventEmitter {
+class TinyAiInstance {
+  /**
+   * Important instance used to make event emitter.
+   * @type {EventEmitter}
+   */
+  #events = new EventEmitter();
+
+  /**
+   * Important instance used to make system event emitter.
+   * @type {EventEmitter}
+   */
+  #sysEvents = new EventEmitter();
+  #sysEventsUsed = false;
+
+  /**
+   * Emits an event with optional arguments to all system emit.
+   * @param {string | symbol} event - The name of the event to emit.
+   * @param {...any} args - Arguments passed to event listeners.
+   */
+  #emit(event, ...args) {
+    this.#events.emit(event, ...args);
+    if (this.#sysEventsUsed) this.#sysEvents.emit(event, ...args);
+  }
+
+  /**
+   * Provides access to a secure internal EventEmitter for subclass use only.
+   *
+   * This method exposes a dedicated EventEmitter instance intended specifically for subclasses
+   * that extend the main class. It prevents subclasses from accidentally or intentionally using
+   * the primary class's public event system (`emit`), which could lead to unpredictable behavior
+   * or interference in the base class's event flow.
+   *
+   * For security and consistency, this method is designed to be accessed only once.
+   * Multiple accesses are blocked to avoid leaks or misuse of the internal event bus.
+   *
+   * @returns {EventEmitter} A special internal EventEmitter instance for subclass use.
+   * @throws {Error} If the method is called more than once.
+   */
+  getSysEvents() {
+    if (this.#sysEventsUsed)
+      throw new Error(
+        'Access denied: getSysEvents() can only be called once. ' +
+          'This restriction ensures subclass event isolation and prevents accidental interference ' +
+          'with the main class event emitter.',
+      );
+    this.#sysEventsUsed = true;
+    return this.#sysEvents;
+  }
+
+  /**
+   * @typedef {(...args: any[]) => void} ListenerCallback
+   * A generic callback function used for event listeners.
+   */
+
+  /**
+   * Sets the maximum number of listeners for the internal event emitter.
+   *
+   * @param {number} max - The maximum number of listeners allowed.
+   */
+  setMaxListeners(max) {
+    this.#events.setMaxListeners(max);
+  }
+
+  /**
+   * Emits an event with optional arguments.
+   * @param {string | symbol} event - The name of the event to emit.
+   * @param {...any} args - Arguments passed to event listeners.
+   * @returns {boolean} `true` if the event had listeners, `false` otherwise.
+   */
+  emit(event, ...args) {
+    return this.#events.emit(event, ...args);
+  }
+
+  /**
+   * Registers a listener for the specified event.
+   * @param {string | symbol} event - The name of the event to listen for.
+   * @param {ListenerCallback} listener - The callback function to invoke.
+   * @returns {this} The current class instance (for chaining).
+   */
+  on(event, listener) {
+    this.#events.on(event, listener);
+    return this;
+  }
+
+  /**
+   * Registers a one-time listener for the specified event.
+   * @param {string | symbol} event - The name of the event to listen for once.
+   * @param {ListenerCallback} listener - The callback function to invoke.
+   * @returns {this} The current class instance (for chaining).
+   */
+  once(event, listener) {
+    this.#events.once(event, listener);
+    return this;
+  }
+
+  /**
+   * Removes a listener from the specified event.
+   * @param {string | symbol} event - The name of the event.
+   * @param {ListenerCallback} listener - The listener to remove.
+   * @returns {this} The current class instance (for chaining).
+   */
+  off(event, listener) {
+    this.#events.off(event, listener);
+    return this;
+  }
+
+  /**
+   * Alias for `on`.
+   * @param {string | symbol} event - The name of the event.
+   * @param {ListenerCallback} listener - The callback to register.
+   * @returns {this} The current class instance (for chaining).
+   */
+  addListener(event, listener) {
+    this.#events.addListener(event, listener);
+    return this;
+  }
+
+  /**
+   * Alias for `off`.
+   * @param {string | symbol} event - The name of the event.
+   * @param {ListenerCallback} listener - The listener to remove.
+   * @returns {this} The current class instance (for chaining).
+   */
+  removeListener(event, listener) {
+    this.#events.removeListener(event, listener);
+    return this;
+  }
+
+  /**
+   * Removes all listeners for a specific event, or all events if no event is specified.
+   * @param {string | symbol} [event] - The name of the event. If omitted, all listeners from all events will be removed.
+   * @returns {this} The current class instance (for chaining).
+   */
+  removeAllListeners(event) {
+    this.#events.removeAllListeners(event);
+    return this;
+  }
+
+  /**
+   * Returns the number of times the given `listener` is registered for the specified `event`.
+   * If no `listener` is passed, returns how many listeners are registered for the `event`.
+   * @param {string | symbol} eventName - The name of the event.
+   * @param {Function} [listener] - Optional listener function to count.
+   * @returns {number} Number of matching listeners.
+   */
+  listenerCount(eventName, listener) {
+    return this.#events.listenerCount(eventName, listener);
+  }
+
+  /**
+   * Adds a listener function to the **beginning** of the listeners array for the specified event.
+   * The listener is called every time the event is emitted.
+   * @param {string | symbol} eventName - The event name.
+   * @param {ListenerCallback} listener - The callback function.
+   * @returns {this} The current class instance (for chaining).
+   */
+  prependListener(eventName, listener) {
+    this.#events.prependListener(eventName, listener);
+    return this;
+  }
+
+  /**
+   * Adds a **one-time** listener function to the **beginning** of the listeners array.
+   * The next time the event is triggered, this listener is removed and then invoked.
+   * @param {string | symbol} eventName - The event name.
+   * @param {ListenerCallback} listener - The callback function.
+   * @returns {this} The current class instance (for chaining).
+   */
+  prependOnceListener(eventName, listener) {
+    this.#events.prependOnceListener(eventName, listener);
+    return this;
+  }
+
+  /**
+   * Returns an array of event names for which listeners are currently registered.
+   * @returns {(string | symbol)[]} Array of event names.
+   */
+  eventNames() {
+    return this.#events.eventNames();
+  }
+
+  /**
+   * Gets the current maximum number of listeners allowed for any single event.
+   * @returns {number} The max listener count.
+   */
+  getMaxListeners() {
+    return this.#events.getMaxListeners();
+  }
+
+  /**
+   * Returns a copy of the listeners array for the specified event.
+   * @param {string | symbol} eventName - The event name.
+   * @returns {Function[]} An array of listener functions.
+   */
+  listeners(eventName) {
+    return this.#events.listeners(eventName);
+  }
+
+  /**
+   * Returns a copy of the internal listeners array for the specified event,
+   * including wrapper functions like those used by `.once()`.
+   * @param {string | symbol} eventName - The event name.
+   * @returns {Function[]} An array of raw listener functions.
+   */
+  rawListeners(eventName) {
+    return this.#events.rawListeners(eventName);
+  }
+
   /**
    * @typedef {Object} AIContentData
    * @property {Array<Record<'text' | 'inlineData', string | { mime_type: string, data: string } | null>>} parts
@@ -59,7 +266,6 @@ class TinyAiInstance extends EventEmitter {
    * @param {boolean} [isSingle] - If true, configures the instance to handle a single session only.
    */
   constructor(isSingle = false) {
-    super();
     this._isSingle = isSingle;
 
     /**
@@ -158,7 +364,7 @@ class TinyAiInstance extends EventEmitter {
         }
 
         // Complete
-        this.emit(`set${this.#capitalizeFirstLetter(name)}`, value, selectedId);
+        this.#emit(`set${this.#capitalizeFirstLetter(name)}`, value, selectedId);
         return;
       }
     }
@@ -201,7 +407,7 @@ class TinyAiInstance extends EventEmitter {
             delete this.history[selectedId].hash[name];
 
           // Complete
-          this.emit(`set${this.#capitalizeFirstLetter(name)}`, null, selectedId);
+          this.#emit(`set${this.#capitalizeFirstLetter(name)}`, null, selectedId);
           return;
         }
       }
@@ -266,7 +472,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { maxOutputTokens: value });
-      this.emit('setMaxOutputTokens', value, selectedId);
+      this.#emit('setMaxOutputTokens', value, selectedId);
       return;
     }
     throw new Error('Invalid number value!');
@@ -294,7 +500,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { temperature: value });
-      this.emit('setTemperature', value, selectedId);
+      this.#emit('setTemperature', value, selectedId);
       return;
     }
     throw new Error('Invalid number value!');
@@ -322,7 +528,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { topP: value });
-      this.emit('setTopP', value, selectedId);
+      this.#emit('setTopP', value, selectedId);
       return;
     }
     throw new Error('Invalid number value!');
@@ -350,7 +556,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { topK: value });
-      this.emit('setTopK', value, selectedId);
+      this.#emit('setTopK', value, selectedId);
       return;
     }
     throw new Error('Invalid number value!');
@@ -378,7 +584,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { presencePenalty: value });
-      this.emit('setPresencePenalty', value, selectedId);
+      this.#emit('setPresencePenalty', value, selectedId);
       return;
     }
     throw new Error('Invalid number value!');
@@ -406,7 +612,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { frequencyPenalty: value });
-      this.emit('setFrequencyPenalty', value, selectedId);
+      this.#emit('setFrequencyPenalty', value, selectedId);
       return;
     }
     throw new Error('Invalid number value!');
@@ -436,7 +642,7 @@ class TinyAiInstance extends EventEmitter {
     if (typeof value === 'boolean') {
       const selectedId = this.getId(id);
       this.#_insertIntoHistory(selectedId, { enableEnhancedCivicAnswers: value });
-      this.emit('setEnabledEnchancedCivicAnswers', value, selectedId);
+      this.#emit('setEnabledEnchancedCivicAnswers', value, selectedId);
       return;
     }
     throw new Error('Invalid boolean value!');
@@ -466,7 +672,7 @@ class TinyAiInstance extends EventEmitter {
     const model = typeof data === 'string' ? data : null;
     const selectedId = this.getId(id);
     this.#_insertIntoHistory(selectedId, { model });
-    this.emit('setModel', model, selectedId);
+    this.#emit('setModel', model, selectedId);
   }
 
   /**
@@ -806,13 +1012,13 @@ class TinyAiInstance extends EventEmitter {
     if (id !== null) {
       if (this.history[id]) {
         this.#_selectedHistory = id;
-        this.emit('selectDataId', id);
+        this.#emit('selectDataId', id);
         return true;
       }
       return false;
     }
     this.#_selectedHistory = null;
-    this.emit('selectDataId', null);
+    this.#emit('selectDataId', null);
     return true;
   }
 
@@ -1023,7 +1229,7 @@ class TinyAiInstance extends EventEmitter {
       history.ids.splice(index, 1);
       history.hash.data.splice(index, 1);
       history.tokens.data.splice(index, 1);
-      this.emit('deleteIndex', index, msgId, this.getId(id));
+      this.#emit('deleteIndex', index, msgId, this.getId(id));
       return true;
     }
     return false;
@@ -1049,7 +1255,7 @@ class TinyAiInstance extends EventEmitter {
       }
 
       if (tokens) history.tokens.data[index] = tokens;
-      this.emit('replaceIndex', index, data, tokens, hash, this.getId(id));
+      this.#emit('replaceIndex', index, data, tokens, hash, this.getId(id));
       return true;
     }
     return false;
@@ -1134,7 +1340,7 @@ class TinyAiInstance extends EventEmitter {
       this.history[selectedId].ids.push(newId);
       this.history[selectedId].hash.data.push(hash);
 
-      this.emit('addData', newId, data, tokenContent, hash, selectedId);
+      this.#emit('addData', newId, data, tokenContent, hash, selectedId);
       return newId;
     }
     throw new Error('Invalid history id data!');
@@ -1158,7 +1364,7 @@ class TinyAiInstance extends EventEmitter {
       }
 
       if (typeof tokenAmount === 'number') this.history[selectedId].tokens.prompt = tokenAmount;
-      this.emit('setPrompt', promptData, selectedId);
+      this.#emit('setPrompt', promptData, selectedId);
       return;
     }
     throw new Error('Invalid history id data!');
@@ -1203,7 +1409,7 @@ class TinyAiInstance extends EventEmitter {
 
       if (typeof tokenAmount === 'number')
         this.history[selectedId].tokens.firstDialogue = tokenAmount;
-      this.emit('setFirstDialogue', dialogue, selectedId);
+      this.#emit('setFirstDialogue', dialogue, selectedId);
       return;
     }
     throw new Error('Invalid history id data!');
@@ -1255,7 +1461,7 @@ class TinyAiInstance extends EventEmitter {
       }
 
       if (typeof tokenAmount === 'number') this.history[selectedId].tokens.file = tokenAmount;
-      this.emit('setFileData', this.history[selectedId].file, hash, selectedId);
+      this.#emit('setFileData', this.history[selectedId].file, hash, selectedId);
       return;
     }
     throw new Error('Invalid history id data!');
@@ -1274,7 +1480,7 @@ class TinyAiInstance extends EventEmitter {
       delete this.history[selectedId].file;
       delete this.history[selectedId].hash.file;
       delete this.history[selectedId].tokens.file;
-      this.emit('setFileData', null, null, selectedId);
+      this.#emit('setFileData', null, null, selectedId);
       return;
     }
     throw new Error('Invalid history id data!');
@@ -1321,7 +1527,7 @@ class TinyAiInstance extends EventEmitter {
 
       if (typeof tokenAmount === 'number')
         this.history[selectedId].tokens.systemInstruction = tokenAmount;
-      this.emit('setSystemInstruction', data, selectedId);
+      this.#emit('setSystemInstruction', data, selectedId);
       return;
     }
     throw new Error('Invalid history id data!');
@@ -1398,7 +1604,7 @@ class TinyAiInstance extends EventEmitter {
       model: null,
     };
     if (selected) this.selectDataId(id);
-    this.emit('startDataId', this.history[id], id, selected ? true : false);
+    this.#emit('startDataId', this.history[id], id, selected ? true : false);
     return this.history[id];
   }
 
@@ -1413,10 +1619,28 @@ class TinyAiInstance extends EventEmitter {
     if (this.history[id]) {
       delete this.history[id];
       if (this.getId() === id) this.selectDataId(null);
-      this.emit('stopDataId', id);
+      this.#emit('stopDataId', id);
       return true;
     }
     return false;
+  }
+
+  /**
+   * Destroys the instance by clearing history and removing all event listeners.
+   *
+   * This method resets the internal `history` object, effectively discarding any stored
+   * data or state associated with the instance's operations. It also removes all listeners
+   * from both `#events` and `#sysEvents` to ensure no further event handling occurs and to
+   * prevent memory leaks.
+   *
+   * This method should be called when the instance is no longer needed.
+   *
+   * @returns {void}
+   */
+  destroy() {
+    this.history = {};
+    this.#events.removeAllListeners();
+    this.#sysEvents.removeAllListeners();
   }
 }
 
