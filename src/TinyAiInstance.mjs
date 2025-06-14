@@ -1,6 +1,6 @@
 import objHash from 'object-hash';
 import { EventEmitter } from 'events';
-import { objType } from 'tiny-essentials';
+import { isJsonObject, objType } from 'tiny-essentials';
 
 /**
  * Tiny AI Server Communication API
@@ -393,7 +393,7 @@ class TinyAiInstance {
         // Validate the custom value
         const props = history.customList.find((/** @type {*} */ item) => item.name === name);
         if (
-          objType(props, 'object') &&
+          isJsonObject(props) &&
           typeof props.type === 'string' &&
           typeof props.name === 'string'
         ) {
@@ -839,7 +839,7 @@ class TinyAiInstance {
    * @returns {Record<string, any>|null} The inserted model data, or null if the model already exists.
    */
   _insertNewModel(model) {
-    if (!objType(model, 'object')) throw new Error('Model data must be a valid object.');
+    if (!isJsonObject(model)) throw new Error('Model data must be a valid object.');
 
     if (this.models.findIndex((item) => item.id === model.id) < 0) {
       /** @type {Record<string, any>} */
@@ -962,7 +962,7 @@ class TinyAiInstance {
       if (errData) {
         if (typeof errData === 'string') return { text: errData };
         // @ts-ignore
-        else if (objType(errData, 'object') && typeof errData.text === 'string') return errData;
+        else if (isJsonObject(errData) && typeof errData.text === 'string') return errData;
       }
     }
     return null;
@@ -1331,7 +1331,7 @@ class TinyAiInstance {
       this.history[selectedId].nextId++;
       const hash = objHash(data);
 
-      const tokenContent = objType(tokenData, 'object')
+      const tokenContent = isJsonObject(tokenData)
         ? tokenData
         : { count: typeof tokenData === 'number' ? tokenData : null };
 
