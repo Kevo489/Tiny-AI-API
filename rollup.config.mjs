@@ -1,6 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
 import preserveDirectories from 'rollup-preserve-directives';
 const pkg = JSON.parse(fs.readFileSync('./package.json'))
 
@@ -43,30 +42,4 @@ export default [
     },
     plugins,
   },
-
-  // IIFE (browser)
-  {
-    input: 'src/index.mjs',
-    output: {
-      file: 'dist/TinyAiApi.min.js',
-      format: 'iife',
-      name: 'TinyAiApi',
-      sourcemap: false,
-      globals: {
-        'lodash': '_',
-      }
-    },
-    plugins: [
-      resolve({
-        browser: true,
-        preferBuiltins: false
-      }),
-      commonjs(),
-      terser({
-        format: {
-          comments: false,
-        },
-      }),
-    ]
-  }
 ];
