@@ -1,7 +1,7 @@
 import objHash from 'object-hash';
 import { EventEmitter } from 'events';
 import { isJsonObject, objType } from 'tiny-essentials';
-import { Base64 } from 'js-base64';
+import { encode as encodeBase64 } from 'js-base64';
 
 /**
  * @typedef {Object} SessionDataContent
@@ -58,8 +58,6 @@ import { Base64 } from 'js-base64';
  * Documentation written with the assistance of OpenAI's ChatGPT.
  */
 class TinyAiInstance {
-  static Utils = { Base64 };
-
   /**
    * Important instance used to make event emitter.
    * @type {EventEmitter}
@@ -1493,7 +1491,7 @@ class TinyAiInstance {
         this.history[selectedId].file = {
           mime,
           data,
-          base64: !isBase64 ? Base64.encode(data) : data,
+          base64: !isBase64 ? encodeBase64(data) : data,
         };
         hash = objHash(this.history[selectedId].file);
         this.history[selectedId].hash.file = hash;
