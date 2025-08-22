@@ -2,6 +2,49 @@ import objHash from 'object-hash';
 import { EventEmitter } from 'events';
 import { isJsonObject, objType } from 'tiny-essentials';
 import { Base64 } from 'js-base64';
+
+/**
+ * @typedef {Object} SessionDataContent
+ * @property {AIContentData[]} data
+ * @property {string[]} ids
+ * @property {{ data: Array<TokenCount>; [key: string]: * }} tokens
+ * @property {{ data: Array<string>; [key: string]: * }} hash
+ * @property {string|null} systemInstruction
+ * @property {{ name: string; type: string; }[]} [customList]
+ * @property {string|null} model
+ *
+ */
+
+/**
+ * @typedef {Record<string, any> & SessionDataContent} SessionData
+ */
+
+/**
+ * @typedef {Object} AiModel
+ * @property {any} _response
+ * @property {number} index
+ * @property {string|null} name
+ * @property {string|null} id
+ * @property {string|null} displayName
+ * @property {string|null} version
+ * @property {string|null} description
+ * @property {number|null} inputTokenLimit
+ * @property {number|null} outputTokenLimit
+ * @property {number|null} temperature
+ * @property {number|null} maxTemperature
+ * @property {number|null} topP
+ * @property {number|null} topK
+ * @property {string[]} [supportedGenerationMethods]
+ */
+
+/**
+ * @typedef {Object} AiCategory
+ * @property {string} category
+ * @property {string} displayName
+ * @property {number} index
+ * @property {AiModel[]} data
+ */
+
 /**
  * Tiny AI Server Communication API
  * -----------------------------
@@ -232,17 +275,6 @@ class TinyAiInstance {
    */
 
   /**
-   * @typedef {Record<string, any> & {
-   *   data: Array<AIContentData>,
-   *   ids: Array<string>,
-   *   tokens: { data: Array<TokenCount>; [key: string]: * },
-   *   hash: { data: Array<string>; [key: string]: * },
-   *   systemInstruction: string|null,
-   *   model: string|null
-   * }} SessionData
-   */
-
-  /**
    * @typedef {{ count: number|null, hide?: boolean }} TokenCount
    */
 
@@ -256,7 +288,7 @@ class TinyAiInstance {
   /** @type {Record<string|number, string|{ text: string, hide?: boolean }>} */ _errorCode = {};
   /** @type {string|null} */ _nextModelsPageToken = null;
 
-  /** @type {Array<*>} */ models = [];
+  /** @type {(AiModel|AiCategory)[]} */ models = [];
   /** @type {Object.<string, SessionData>} */ history = {};
   _isSingle = false;
 
@@ -348,7 +380,11 @@ class TinyAiInstance {
           const props = history.customList.find((/** @type {*} */ item) => item.name === name);
           if (!props || typeof props.type !== 'string' || typeof props.name !== 'string') {
             if (typeof history[name] === 'undefined')
-              history.customList.push({ name, type: objType(value) });
+              history.customList.push({
+                name,
+                // @ts-ignore
+                type: objType(value),
+              });
             else throw new Error('This value name is already being used!');
           } else if (props.type !== objType(value))
             throw new Error(
@@ -429,8 +465,7 @@ class TinyAiInstance {
   eraseCustomValue(name, id) {
     this.resetCustomValue(name, id);
     const history = this.getData(id);
-    if (history) {
-      // @ts-ignore
+    if (history && history.customList) {
       const index = history.customList.findIndex((item) => item.name === name);
       if (index > -1) history.customList.splice(index, 1);
       return;
@@ -778,7 +813,7 @@ class TinyAiInstance {
   /**
    * Get the list of models for the AI session.
    *
-   * @returns {Array<*>} The list of models.
+   * @returns {(AiModel|AiCategory)[]} The list of models.
    */
   getModelsList() {
     return Array.isArray(this.models) ? this.models : [];
@@ -788,13 +823,16 @@ class TinyAiInstance {
    * Get model data from the list of models.
    *
    * @param {string} id - The model data id to search for in the models list.
-   * @returns {Record<string, any>|null} The model data if found, otherwise null.
+   * @returns {AiModel|null} The model data if found, otherwise null.
    */
   getModelData(id) {
+    // @ts-ignore
     const model = this.models.find((item) => item.id === id);
+    // @ts-ignore
     if (model) return model;
     else {
       for (const index in this.models) {
+        // @ts-ignore
         if (this.models[index].category) {
           // @ts-ignore
           const modelCategory = this.models[index].data.find((item) => item.id === id);
@@ -842,9 +880,9 @@ class TinyAiInstance {
    */
   _insertNewModel(model) {
     if (!isJsonObject(model)) throw new Error('Model data must be a valid object.');
-
+    // @ts-ignore
     if (this.models.findIndex((item) => item.id === model.id) < 0) {
-      /** @type {Record<string, any>} */
+      /** @type {AiModel} */
       const newData = {
         _response: model._response,
         index: typeof model.index === 'number' ? model.index : 9999999,
@@ -879,6 +917,7 @@ class TinyAiInstance {
         typeof model.category.index === 'number'
       ) {
         // Check category
+        /** @type {AiCategory|null} */
         // @ts-ignore
         let category = this.models.find((item) => item.category === model.category.id);
         // Insert new category
@@ -963,7 +1002,6 @@ class TinyAiInstance {
       const errData = this._errorCode[code];
       if (errData) {
         if (typeof errData === 'string') return { text: errData };
-        // @ts-ignore
         else if (isJsonObject(errData) && typeof errData.text === 'string') return errData;
       }
     }
@@ -1455,7 +1493,6 @@ class TinyAiInstance {
         this.history[selectedId].file = {
           mime,
           data,
-          // @ts-ignore
           base64: !isBase64 ? Base64.encode(data) : data,
         };
         hash = objHash(this.history[selectedId].file);
