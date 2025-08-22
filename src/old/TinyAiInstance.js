@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { Base64 } from 'js-base64';
+
 class TinyAiInstance {
   #_apiKey;
 

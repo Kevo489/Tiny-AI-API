@@ -1,7 +1,7 @@
 import objHash from 'object-hash';
 import { EventEmitter } from 'events';
 import { isJsonObject, objType } from 'tiny-essentials';
-
+import { Base64 } from 'js-base64';
 /**
  * Tiny AI Server Communication API
  * -----------------------------
@@ -15,6 +15,8 @@ import { isJsonObject, objType } from 'tiny-essentials';
  * Documentation written with the assistance of OpenAI's ChatGPT.
  */
 class TinyAiInstance {
+  static Utils = { Base64 };
+
   /**
    * Important instance used to make event emitter.
    * @type {EventEmitter}
