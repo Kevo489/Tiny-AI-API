@@ -150,3 +150,11 @@ By using this project, you agree to follow the terms described in that document.
 ## 📄 License
 
 This project is licensed under the AGPL-3.0 License - see the [LICENSE](./LICENSE) file for details.
+
+---
+
+<div align="center">
+<a href="./img/"><img src="./img/66a177ed-8dbb-4e4b-a9e2-d7b2311e62b6.png" height="300" /></a>
+<br/>
+Made with tiny love!
+</div>
